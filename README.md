@@ -31,6 +31,24 @@ cornjacket-platform/             # The "Wrapper" Parent Folder (Not a Git repo)
     └── onboarding-guides.md
 ```
 
+## Workspace Setup Guide
+
+To maintain security and separation of concerns, this project is split into multiple repositories. We use a **Wrapper Folder** concept to organize these repositories locally.
+
+### Local Setup
+1. Create a parent directory: `mkdir cornjacket-platform && cd cornjacket-platform`
+2. Clone the core repositories into this folder:
+   - `git clone [url-to-platform-docs]`
+   - `git clone [url-to-platform-infra]`
+   - `git clone [url-to-platform-services]`
+
+### The Wrapper Concept
+The `cornjacket-platform/` directory is **not** a Git repository. It is a logical container that allows you to:
+- **Cross-Reference:** Easily move between infrastructure and application code.
+- **Local Simulation:** Use `docker-compose` at the service level to reference the entire platform.
+- **Security:** Ensure that permissions are managed at the individual repository level, not the folder level.
+
+
 ## Repository Strategy
 
 ### 1. platform-infra (The Stage)
