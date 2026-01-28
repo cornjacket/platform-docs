@@ -11,9 +11,9 @@ cornjacket-platform/             # The "Wrapper" Parent Folder (Not a Git repo)
 │   ├── platform-infra-networking/
 │   │   ├── dev/                 # Terraform for the Dev VPC
 │   │   ├── modules/             # Reusable network logic
-│   │   ├── specification.md     # Networking blueprint
-│   │   └── platform-standards.md
-│   └── platform-infra-data/     # (Phase 2) Databases & S3
+│   │   └── specification.md     # Networking blueprint
+│   ├── platform-infra-data/     # (Phase 2) Databases & S3
+│   └── platform-standards.md
 │
 ├── platform-services/           # [Git Repo 2] The Application Monolith
 │   ├── apps/                    # All individual service code
@@ -38,9 +38,9 @@ To maintain security and separation of concerns, this project is split into mult
 ### Local Setup
 1. Create a parent directory: `mkdir cornjacket-platform && cd cornjacket-platform`
 2. Clone the core repositories into this folder:
-   - `git clone [url-to-platform-docs]`
-   - `git clone [url-to-platform-infra]`
-   - `git clone [url-to-platform-services]`
+   - `git clone https://github.com/cornjacket/platform-docs.git`
+   - `git clone https://github.com/cornjacket/platform-infra.git`
+   - `git clone https://github.com/cornjacket/platform-services.git`
 
 ### The Wrapper Concept
 The `cornjacket-platform/` directory is **not** a Git repository. It is a logical container that allows you to:
