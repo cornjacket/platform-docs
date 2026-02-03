@@ -41,6 +41,10 @@ To maintain security and separation of concerns, this project is split into mult
    - `git clone https://github.com/cornjacket/platform-docs.git`
    - `git clone https://github.com/cornjacket/platform-infra.git`
    - `git clone https://github.com/cornjacket/platform-services.git`
+3. Create the `CLAUDE.md` symlink in the wrapper directory so that Claude Code can pick up project instructions when working from the top-level folder:
+   ```bash
+   ln -s platform-docs/CLAUDE.md CLAUDE.md
+   ```
 
 ### The Wrapper Concept
 The `cornjacket-platform/` directory is **not** a Git repository. It is a logical container that allows you to:
