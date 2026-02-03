@@ -1,8 +1,30 @@
 # ADR 0001: Initial Architecture Summary for Cornjacket Platform
 
-* **Status:** Accepted
+* **Status:** Superseded
 * **Date:** 2026-01-29
-* **Architect:** [Your Name/Gemini]
+* **Architect:** David
+
+---
+
+> **NOTE:** This document has been superseded and split into focused ADRs:
+>
+> | ADR | Topic |
+> |-----|-------|
+> | [0001-event-driven-cqrs-architecture.md](0001-event-driven-cqrs-architecture.md) | Core CQRS pattern and networked monolith |
+> | [0002-outbox-first-write-pattern.md](0002-outbox-first-write-pattern.md) | Write path consistency |
+> | [0003-unified-postgresql-data-stack.md](0003-unified-postgresql-data-stack.md) | Database technology choice |
+> | [0004-error-handling-philosophy.md](0004-error-handling-philosophy.md) | Delivery guarantees, DLQ, circuit breaker |
+> | [0005-infrastructure-technology-choices.md](0005-infrastructure-technology-choices.md) | Traefik, EMQX, Redpanda |
+> | [0006-security-model.md](0006-security-model.md) | Authentication and network security |
+> | [0007-local-and-cloud-development-strategy.md](0007-local-and-cloud-development-strategy.md) | Dev environments and testing |
+> | [0008-cicd-pipeline-strategy.md](0008-cicd-pipeline-strategy.md) | Build and deployment pipelines |
+> | [0009-ai-inference-stream-processor.md](0009-ai-inference-stream-processor.md) | AI integration pattern |
+>
+> Operational details are in [../design-spec.md](../design-spec.md).
+>
+> **This document is preserved for historical reference only.**
+
+---
 
 ## 1. Context and Problem Statement
 
@@ -20,17 +42,19 @@ The system must handle high-velocity "Write" traffic while remaining responsive 
 - Gain hands-on experience with production-grade technologies
 
 ### 1.3 Key Requirements
-- Handle high-velocity "Write" traffic
-- Remain responsive to complex "Query" requests
-- Support real-time AI-driven analysis
-- Enable event replay and multiple consumers
+- Support dual ingestion protocols (HTTP REST + MQTT) from distinct client types
+- Decouple read and write paths to allow independent scaling
+- Fan out events to multiple independent consumers (projections, AI, actions)
+- Enable event replay within a retention window for recovery and reprocessing
+- Support real-time AI inference on streaming data with sub-second action triggers
 
 ### 1.4 Constraints
-- Development/learning environment (cost-conscious)
+- Single-developer project (limits operational complexity and on-call capacity)
+- Development/learning environment (cost-conscious, ~$50/month budget)
 - Initial implementation as networked monolith
 - AWS-focused deployment
 
-## 1.5 Architecture Overview
+### 1.5 Architecture Overview
 
 ### High-Level System Architecture
 ```mermaid
@@ -111,9 +135,11 @@ The Cornjacket platform follows an event-driven architecture with clear separati
 
 **Write Path (CQRS Command):**
 1. HTTP/MQTT request → Gateway/Broker → Ingestion Service
-2. Ingestion validates → Writes to Event Store (PostgreSQL)
-3. Ingestion publishes → Message Bus (Redpanda)
+2. Ingestion validates → Writes to Outbox table (PostgreSQL) → Returns success to client
+3. Background processor → Writes to Event Store + Publishes to Message Bus → Deletes from Outbox
 4. Consumers (AI, Orchestrator) process asynchronously
+
+*(See Section 4.2 for full outbox pattern details)*
 
 **Read Path (CQRS Query):**
 1. HTTP request → API Gateway → Query Service
@@ -124,31 +150,27 @@ The Cornjacket platform follows an event-driven architecture with clear separati
 1. AI Service detects anomaly → Publishes to Message Bus
 2. Action Orchestrator consumes → Triggers external webhooks/alerts
 
-
-
-The Cornjacket platform follows...
-
 ## 2. Design Choices & Decisions
 
-### 2.1 Entry Point Strategy: Parallel Entry (Best Approach)
+### 2.1 Entry Point Strategy: Parallel Entry
 * **Decision:** Separate the entry points for different protocols. Use an **Off-the-shelf API Gateway** (e.g., Kong, Traefik) for HTTP traffic and an **Off-the-shelf MQTT Broker** (e.g., EMQX) for stateful TCP IoT traffic.
 * **Reasoning:** Protocol isolation prevents long-lived MQTT connections from consuming resources needed by short-lived HTTP requests. Using off-the-shelf tools ensures battle-tested security and protocol compliance.
 
-### 2.2 Data Flow Pattern: Event-Driven Message Bus (Best Approach)
+### 2.2 Data Flow Pattern: Event-Driven Message Bus
 * **Decision:** Utilize a centralized **Message Bus** (e.g., Kafka or Redpanda) as the "unifier."
 * **Reasoning:** Decouples ingestion from processing. It acts as a buffer (pressure valve) to protect downstream databases (TSDB) and AI services from traffic spikes (backpressure management).
 
-### 2.3 Structural Philosophy: CQRS (Best Approach)
+### 2.3 Structural Philosophy: CQRS
 * **Decision:** Implement **Command Query Responsibility Segregation**. 
     * The **Ingestion Service** handles writes.
     * The **Query API** handles reads and data retrieval.
 * **Reasoning:** Scaling requirements for writes (high-volume, low-latency) are fundamentally different from reads (complex aggregations, AI-enriched data). This prevents heavy queries from slowing down data ingestion.
 
-### 2.4 AI Integration: In-Flight Inference (Best Approach)
+### 2.4 AI Integration: In-Flight Inference
 * **Decision:** Deploy the AI Inference engine as a **Stream Processor/Consumer** on the message bus.
 * **Reasoning:** Allows for real-time anomaly detection and predictive actions. Data is enriched *before* it hits the permanent storage (TSDB), enabling immediate responses via the Action Orchestrator.
 
-### 2.5 Build vs. Buy: Hybrid Integration (Best Approach)
+### 2.5 Build vs. Buy: Hybrid Integration
 * **Decision:** Use off-the-shelf software for infrastructure (Gateway, Broker, Bus, TSDB). Develop **Custom Go Services** for business logic, ingestion validation, and action orchestration. Develop **Custom Python Services** for AI modeling.
 * **Reasoning:** Focuses engineering effort on the unique architectural logic and AI implementation rather than reinventing standard networking protocols.
 
@@ -173,50 +195,29 @@ The Cornjacket platform follows...
   - Sidecar overhead
   - Acceptable for learning proper architecture patterns
 
-#### Complete Dev Task Architecture
+### 2.7 Local Development Environment
 
-**ECS Task Composition:**
+* **Decision:** Hybrid local setup — infrastructure in `docker-compose`, application code runs natively
+* **Architecture:**
+  - `docker-compose.yml` in `platform-services/` runs infrastructure only: Postgres, Redpanda, EMQX, Traefik
+  - Go binary runs natively on the host (compiled and executed directly)
+  - Python AI Inference Service runs natively on the host (e.g., `uvicorn` / `python main.py`)
+  - Application processes connect to containerized infrastructure via `localhost`
+* **Reasoning:**
+  - Native execution eliminates container rebuild cycles — compile and restart immediately
+  - Sub-second feedback loop for Go (`go run` / `go build`) and Python (no build step)
+  - Infrastructure containers are stable and rarely change, so container overhead is justified for them
+  - Matches how most developers already work (editor + terminal + containers for deps)
+* **Trade-offs:**
+  - Local environment differs from ECS (native processes vs. all-container) — container-specific bugs may only surface in AWS dev
+  - Requires Go toolchain and Python virtualenv installed on host
+  - No Terraform or IAM simulation locally — AWS-specific behavior tested in dev environment only
+* **Decision deferred:**
+  - Hot-reload tooling for Go (e.g., `air`, `gow`) vs. manual restart
+  - Python virtualenv management (venv, poetry, etc.)
+  - AI Inference Service port assignment for local development
 
-| Container | Purpose | Ports | Volume Mounts |
-|-----------|---------|-------|---------------|
-| **traefik** | API Gateway / Router | 80 (HTTP entry), 8080 (dashboard) | Config volume |
-| **app** | Go Monolith | 8080 (ingestion), 8081 (query), 8082 (actions) | None |
-| **mqtt-broker** | EMQX MQTT Broker | 1883 (MQTT), 18083 (dashboard) | EFS/EBS for persistence |
-| **redpanda** | Message Bus | 9092 (Kafka API), 8081 (admin) | EFS/EBS for persistence |
-| **postgres** | Event Store + TSDB | 5432 (internal only) | EFS/EBS for persistence |
-
-**Communication Patterns:**
-- External → Traefik (port 80) → App ports (8080/8081/8082)
-- External → MQTT (port 1883) → EMQX
-- IoT devices → EMQX → App (subscribes to MQTT topics)
-- App → Postgres (localhost:5432) - event store reads/writes
-- App → Redpanda (localhost:9092) - publish events
-- App → MQTT (localhost:1883) - subscribe to device messages
-
-**Persistent Storage:**
-- **Decision deferred:** EFS vs. EBS for container data persistence
-- **Required for:** postgres (event store + time-series data), redpanda (message buffer), mqtt-broker (sessions/config)
-- **Not required for:** app (stateless container, uses Postgres for data), traefik (config from volume)
-
-**Resource Allocation (Dev):**
-- **Allocation:** 1 vCPU, 2GB memory (total task)
-- **Rationale:** Cost optimization for dev environment, acceptable slow performance
-- **Monitoring:** Watch for memory pressure/thrashing via CloudWatch, scale up if needed
-- **Decision deferred:** Per-container resource limits based on profiling
-
-**Access Patterns:**
-- HTTP API: `http://<task-ip>/api/v1/*`
-- MQTT: `mqtt://<task-ip>:1883`
-- Traefik Dashboard: `http://<task-ip>:8080`
-- EMQX Dashboard: `http://<task-ip>:18083`
-
-**Cost Estimate (Dev):**
-- ECS Fargate: ~$30-40/month (1 vCPU, 2GB, running 24/7)
-- EFS storage: ~$5-10/month
-- Logs/metrics: ~$5/month
-- **Total: ~$40-55/month**
-
-### 2.7 Observability
+### 2.8 Observability
 
 #### Logging
 * **Decision:** CloudWatch Logs with structured JSON format
@@ -260,9 +261,10 @@ The Cornjacket platform follows...
 | **API Gateway** | Off-the-shelf | HTTP Auth, Rate-limiting, Routing. |
 | **MQTT Broker** | Off-the-shelf | Managing IoT device connections and Pub/Sub. |
 | **Message Bus** | Infrastructure | Central data pipeline (Kafka/Redpanda). |
+| **Event Handler** | Custom (Go) | Consuming events from bus; updating CQRS materialized projections. |
 | **Ingestion Service** | Custom (Go) | Validating and cleaning data; pushing to Bus. |
 | **AI Inference** | Custom (Python) | In-flight anomaly detection and forecasting. |
-| **TSDB** | Database | Long-term historical storage (InfluxDB/Timescale). |
+| **TSDB** | Database | Long-term historical storage (PostgreSQL + TimescaleDB). |
 | **Query API** | Custom (Go) | Serving data and AI insights via HTTP. |
 | **Action Orchestrator**| Custom (Go) | Triggering webhooks/alerts based on AI logic. |
 
@@ -276,42 +278,63 @@ The Cornjacket platform follows...
   - Compatible with standard Kafka client libraries
   - Works locally and in AWS
 
-#### Deployment Architecture (Deferred)
-* **Option A - Sidecar:** Redpanda container within monolith ECS task
-  - Pros: Simpler deployment, single task to manage
-  - Cons: Resource contention, coupled lifecycle
-  - Requires: EFS volume mount for data persistence
-  
-* **Option B - Separate Service:** Redpanda as standalone ECS service
-  - Pros: Independent scaling, clearer separation, easier debugging
-  - Cons: Additional service to deploy
-  - Requires: EBS or EFS for persistence
-
-* **Decision deferred:** Will evaluate based on resource usage patterns and operational experience in dev
-
-#### Data Persistence
-* **Solution:** Mount persistent volume (EFS or EBS) to Redpanda container
-* **Reasoning:** Message bus data survives container restarts, maintains buffer across deployments
+#### Deployment Architecture
+* **Decision:** Sidecar — Redpanda container within the monolith ECS task
+* **Reasoning:**
+  - Simpler deployment, single task to manage
+  - Consistent with the sidecar pattern used for Postgres and EMQX
+  - Sufficient for dev-scale traffic
+* **Trade-offs:**
+  - Resource contention with other containers in the shared task
+  - Coupled lifecycle (Redpanda restarts if the task restarts)
+* **Decision deferred:** Extraction to a standalone ECS service for production if independent scaling is needed
 
 ### 3.2 Database & Event Store
 * **Decision:** Single PostgreSQL instance with TimescaleDB extension
   - Serves as both event store (CQRS) and time-series database
   - Separate schemas for event store vs. time-series data
 
+* **Reasoning:**
+  - Single database technology simplifies the operational stack — one set of connection libraries, one query language (SQL), one backup strategy, one container to manage
+  - TimescaleDB extends Postgres with time-series capabilities (hypertables, continuous aggregates, compression) without introducing a separate system like InfluxDB
+  - Avoids dual-database complexity: no need for separate drivers, connection pools, health checks, or data synchronization between an event store and a dedicated TSDB
+  - PostgreSQL ecosystem is mature and well-understood — extensive tooling, monitoring, and community support
+  - Reduces cognitive overhead for a single-developer project
+
+* **Event Store Schema (append-only, CQRS write side):**
+
+  | Column | Type | Purpose |
+  |--------|------|---------|
+  | event_id | UUID | Unique identifier per event |
+  | event_type | STRING | Discriminator (e.g., `sensor.reading`, `user.action`) |
+  | aggregate_id | STRING | Groups related events (e.g., device ID, session ID) |
+  | timestamp | TIMESTAMPTZ | When the event occurred |
+  | payload | JSONB | Event-specific data |
+  | metadata | JSONB | Trace IDs, source info, schema version |
+
+* **Time-Series Schema:**
+  - Each customer project defines its own TimescaleDB schema tailored to its specific data model
+  - Schemas use typed columns (not JSONB) for known, structured time-series data to optimize storage and query performance
+  - The Event Handler transforms events from the bus into the appropriate project-specific schema
+  - Decision deferred: Schema provisioning and multi-tenant isolation strategy
+
 * **Deployment (Dev):** Postgres as sidecar container with persistent volume
   - Acceptable for low-traffic dev environment
   - Requires EFS/EBS mount for data persistence
-  
-* **Trade-offs:** 
+
+* **Trade-offs:**
   - Cannot scale event store and TSDB independently
+  - A dedicated TSDB (InfluxDB, QuestDB) may outperform TimescaleDB for pure time-series workloads at high volume — acceptable given dev-scale traffic
   - Deferred decision: Separate instances for staging/prod if needed
 
 ### 3.3 Message Format
 
 * **Decision:** JSON for initial development, migrate to binary format (Protobuf or MessagePack) for production
-* **Reasoning:** 
+* **Scope:** The same JSON event envelope is used consistently across the outbox table, event store, and Redpanda message bus. The Ingestion Service serializes once to the outbox; the background processor copies the same structure to the event store and Redpanda without transformation.
+* **Reasoning:**
+  - Single serialization path simplifies the Ingestion Service — no transformation between bus and store
   - JSON enables fast iteration on event schemas during development
-  - Human-readable for debugging
+  - Human-readable for debugging across both Redpanda and Postgres
   - No build tooling complexity initially
   - Binary format migration deferred until schema stabilizes and performance requirements are clear
 * **Trade-offs:** 
@@ -335,7 +358,10 @@ The Cornjacket platform follows...
 * **Trade-offs:** 
   - Python slower than compiled languages (acceptable for learning project)
   - Can migrate to Go-Python hybrid if performance becomes critical
-* **Decision deferred:** 
+* **Deployment:**
+  - **AWS dev:** Sidecar container within the ECS task, consistent with the other infrastructure containers
+  - **Local dev:** Runs natively on the host (e.g., `uvicorn` / `python main.py`), consistent with the Go binary
+* **Decision deferred:**
   - Specific ML use case and models (anomaly detection, forecasting, classification, etc.)
   - Model deployment and versioning strategy
   - Whether to add on-demand API pattern (Pattern B) in addition to stream processing
@@ -368,6 +394,51 @@ graph LR
 
 ## 4. Operational Details
 
+### 4.0 Dev Environment Task Architecture
+
+**ECS Task Composition:**
+
+| Container | Purpose | Ports | Volume Mounts |
+|-----------|---------|-------|---------------|
+| **traefik** | API Gateway / Router | 80 (HTTP entry), 8180 (dashboard) | Config volume |
+| **app** | Go Monolith | 8080 (ingestion), 8081 (query), 8082 (actions) | None |
+| **mqtt-broker** | EMQX MQTT Broker | 1883 (MQTT), 18083 (dashboard) | EFS/EBS for persistence |
+| **redpanda** | Message Bus | 9092 (Kafka API), 9644 (admin) | EFS/EBS for persistence |
+| **postgres** | Event Store + TSDB | 5432 (internal only) | EFS/EBS for persistence |
+| **ai-inference** | AI Inference Service (Python/FastAPI) | 8090 (HTTP, internal only) | None |
+
+**Communication Patterns:**
+- External → Traefik (port 80) → App ports (8080/8081/8082)
+- External → MQTT (port 1883) → EMQX
+- IoT devices → EMQX → App (subscribes to MQTT topics)
+- App → Postgres (localhost:5432) - event store reads/writes
+- App → Redpanda (localhost:9092) - publish events
+- App → MQTT (localhost:1883) - subscribe to device messages
+
+**Persistent Storage:**
+- **Decision deferred:** EFS vs. EBS for container data persistence
+- **Required for:** postgres (event store + time-series data), redpanda (message buffer), mqtt-broker (sessions/config)
+- **Not required for:** app (stateless container, uses Postgres for data), traefik (config from volume)
+
+**Resource Allocation (Dev):**
+- **Allocation:** 1 vCPU, 2GB memory (total task)
+- **Rationale:** Cost optimization for dev environment, acceptable slow performance
+- **Monitoring:** Watch for memory pressure/thrashing via CloudWatch, scale up if needed
+- **Decision deferred:** Per-container resource limits based on profiling
+
+**Access Patterns:**
+- HTTP API: `http://<task-ip>/api/v1/*`
+- MQTT: `mqtt://<task-ip>:1883`
+- Traefik Dashboard: `http://<task-ip>:8180`
+- EMQX Dashboard: `http://<task-ip>:18083`
+- Redpanda Admin: `http://<task-ip>:9644`
+
+**Cost Estimate (Dev):**
+- ECS Fargate: ~$30-40/month (1 vCPU, 2GB, running 24/7)
+- EFS storage: ~$5-10/month
+- Logs/metrics: ~$5/month
+- **Total: ~$40-55/month**
+
 ### 4.1 Message Bus Configuration
 
 #### Topic Design
@@ -389,21 +460,45 @@ graph LR
 
 ### 4.2 CQRS Data Flow & Consistency
 
-* **Write Path (Command Side):**
-  - Ingestion Service validates incoming requests
-  - Writes events to Postgres Event Store (source of truth)
-  - Publishes same events to Redpanda message bus
+#### Write Path (Command Side)
 
-* **Read Path (Query Side):**
-  - Event Handler consumes from Redpanda
-  - Updates materialized projections in Postgres (optimized for queries)
-  - Query Service reads from projections
+The write path uses an **outbox-first pattern** to guarantee durability and avoid dual-write consistency issues.
 
-* **Eventual Consistency:**
-  - Write and read sides are eventually consistent
-  - Lag between event written and projection updated (typically milliseconds)
-  - Acceptable for dev environment
-  - Decision deferred: Consistency requirements for production
+**Step 1 — Ingestion (synchronous, client-facing):**
+1. Ingestion Service receives HTTP/MQTT request
+2. Validates the incoming event
+3. Writes to the **outbox table** (with retry on failure, 2-3 attempts with backoff)
+4. Returns success to client once outbox write succeeds — this is the "accepted" acknowledgment
+
+**Step 2 — Processing (asynchronous, background):**
+1. Background processor LISTENs for Postgres NOTIFY on outbox inserts (with periodic fallback poll for reliability)
+2. Writes event to the **event store** (append-only, immutable)
+3. Publishes event to **Redpanda** message bus
+4. Deletes the outbox row only after both succeed
+5. If either fails, the outbox entry remains and the entire operation retries
+
+**Outbox Table Schema:**
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| outbox_id | UUID | Unique identifier |
+| created_at | TIMESTAMPTZ | When the event was accepted |
+| event_payload | JSONB | The full event envelope (same format as event store) |
+| retry_count | INTEGER | Number of processing attempts (for monitoring/alerting) |
+
+#### Read Path (Query Side)
+
+- Event Handler consumes from Redpanda
+- Updates materialized projections in Postgres (optimized for queries)
+- Query Service reads from projections
+
+#### Consistency Guarantees
+
+* **Durability:** An event is durably captured the moment the outbox write succeeds. No accepted event is ever lost.
+* **Atomicity:** The event store write and Redpanda publish are handled together — if either fails, both retry. No partial state.
+* **Eventual consistency:** The event store and message bus are eventually consistent with the outbox. Lag is typically milliseconds under normal operation.
+* **Immutability:** The event store is append-only. The outbox is transient (events are deleted after processing). Clean separation of concerns.
+* **Retryability:** Failed processing is automatically retried. The outbox serves as a durable retry queue.
 
 * **Consumers:**
   - Event Handler: Updates CQRS projections
@@ -420,7 +515,6 @@ AI-detected anomalies and other critical events.
 #### Example Action Flow
 
 ```mermaid
-Note: Specific actions...
 graph TD
     BUS[Redpanda Message Bus]
     
@@ -451,14 +545,11 @@ graph TD
     style EVAL fill:#fff4e6
 ```
 
-Note: Specific actions...
-
-Note: Specific actions and integrations are examples - actual implementation deferred 
-to use case definition.
+*Note: Specific actions and integrations are examples — actual implementation deferred to use case definition.*
 
 #### Webhook Retry Logic
 * **Decision:** Exponential backoff with maximum retry attempts
-  - Dev configuration: 3-5 retry attempts with delays (1s, 2s, 4s, 8s, 16s)
+  - Initial defaults (subject to tuning): 3-5 retry attempts with delays (1s, 2s, 4s, 8s, 16s)
   - After max retries: Log failure and continue processing
 * **Reasoning:** 
   - Industry standard pattern for handling transient failures
@@ -473,17 +564,17 @@ to use case definition.
   - Dead letter queue for failed webhooks requiring manual intervention
 
 #### Timeout Handling
-* **Decision:** 30-second timeout per webhook call
-* **Reasoning:** 
+* **Decision:** Per-webhook timeout with initial default of 30 seconds (subject to tuning)
+* **Reasoning:**
   - Accommodates slow external services
   - Prevents indefinite blocking
-  - Reasonable for dev testing with external APIs
+  - Reasonable starting point for dev testing with external APIs
 * **Decision deferred:** Production timeout tuning based on SLA requirements
 
 #### Rate Limiting
-* **Decision:** Simple global rate limit (10 webhooks per minute)
+* **Decision:** Simple global rate limit with initial default of 10 webhooks per minute (subject to tuning)
 * **Implementation:** In-memory tracking in Action Orchestrator service
-* **Reasoning:** 
+* **Reasoning:**
   - Protects external services from being overwhelmed
   - Prevents accidental spam during development and testing
   - Sufficient for single-instance dev environment
@@ -492,7 +583,7 @@ to use case definition.
   - Shared state management (Redis) for multi-instance deployments
 
 #### Deduplication
-* **Decision:** Skip duplicate alerts within 5-minute window
+* **Decision:** Skip duplicate alerts within a time window, initial default of 5 minutes (subject to tuning)
 * **Implementation:** In-memory cache of recent events (event type + target identifier)
 * **Reasoning:** 
   - Prevents redundant notifications from repeated events
@@ -512,7 +603,7 @@ to use case definition.
 * **Expected Load:** Low traffic (1-10 events/second)
   - HTTP API: ~10 requests/second
   - MQTT events: ~10 events/second
-* **Reasoning:** Dev environment for testing and development, not production scale
+* **Reasoning:** Dev environment for testing and development, not production scale. These targets are intentionally orders of magnitude below production ambitions to optimize for cost and simplicity during the learning phase.
 * **Decision deferred:** Production throughput requirements based on actual use case and load testing
 
 ### 5.2 Latency Requirements (Dev Environment)
@@ -545,14 +636,15 @@ to use case definition.
 ### 6.1 Authentication & Authorization
 
 #### HTTP API
-* **Decision:** JWT-based authentication
-* **Reasoning:** 
+* **Decision:** JWT-based authentication validated at the API Gateway (Traefik)
+* **Reasoning:**
   - Industry standard token-based auth
   - Stateless (no session management needed)
-  - Good practice for production readiness
-* **Implementation:** JWT validation middleware in API Gateway (Traefik) or application layer
-* **Decision deferred:** 
-  - Authorization/RBAC policies
+  - Centralized auth at the gateway keeps application code simpler
+  - Rejected requests never reach the application layer
+* **Implementation:** Traefik ForwardAuth middleware or JWT plugin
+* **Decision deferred:**
+  - Authorization/RBAC policies (may require app-layer logic for fine-grained permissions)
   - JWT token lifetime and refresh strategy
   - Identity provider integration
 
@@ -589,25 +681,50 @@ to use case definition.
 
 #### Dev Environment Security Posture
 * **Decision:** Relaxed security policies for development convenience
-  - **Public exposure:** HTTP (port 80), MQTT (port 1883), dashboards (Traefik 8080, EMQX 18083)
+  - **Public exposure:** HTTP (port 80), MQTT (port 1883), dashboards (Traefik 8180, EMQX 18083)
   - **Internal only:** Postgres (5432), Redpanda (9092) - no public internet access
   - **Security groups:** Allow broad IP ranges for testing flexibility
   - **No TLS:** Plain HTTP and MQTT (simpler debugging in dev)
   - **No encryption at rest:** Unencrypted EFS volumes
 
-* **Reasoning:** 
+* **Reasoning:**
   - Development environment not exposed to production traffic
   - Simplified debugging and testing
   - Cost optimization (no certificate management)
-  - Direct task IP access provides some obscurity
 
-* **Decision deferred:** 
+* **Decision deferred:**
   - TLS/HTTPS for all HTTP traffic (production requirement)
   - MQTT over TLS (production requirement)
   - Encryption at rest for persistent volumes
   - Strict security group policies (least privilege)
   - VPC isolation and network segmentation
   - WAF and DDoS protection
+
+### 6.4 Inter-Service Authentication
+
+* **Current state:** All containers share the same ECS task and communicate over localhost. No inter-service authentication is required — services trust each other implicitly within the task boundary.
+* **Decision deferred:** When services are extracted to separate ECS tasks/services for production:
+  - Mutual TLS (mTLS) between services
+  - Service mesh (e.g., AWS App Mesh) for identity and traffic management
+  - IAM-based authentication for AWS-native service-to-service calls
+
+### 6.5 Input Validation
+
+* **Decision:** Validate all external input at the system boundary (Ingestion Service)
+* **Principles:**
+  - Reject malformed payloads before processing (schema validation)
+  - Enforce size limits to prevent resource exhaustion
+  - Sanitize or reject unexpected/dangerous content
+  - Rate limit per client to prevent abuse
+  - Fail closed — reject uncertain input rather than accepting it
+* **Reasoning:**
+  - External data (HTTP, MQTT) is untrusted by default
+  - Validation at the boundary protects all downstream components
+  - Consistent with "Security by Design" goal
+* **Decision deferred:**
+  - Specific schema validation library/approach
+  - Exact size limits and rate limits per endpoint
+  - Sanitization rules based on payload content types
 
 ## 7. Disaster Recovery
 
@@ -689,7 +806,7 @@ to use case definition.
 **Complexity:**
 - Distributed system debugging harder than monolith (multiple containers, async processing)
 - Eventual consistency between write and read sides requires careful handling
-- More moving parts (5 containers in dev task vs. simple monolith)
+- More moving parts (6 containers in dev task vs. simple monolith)
 
 **Operational Overhead:**
 - Multiple technologies to learn and manage (Redpanda, Postgres, EMQX, Traefik)
@@ -708,9 +825,37 @@ to use case definition.
 - Testing distributed flows more complex than testing single process
 
 **Resource Constraints (Dev):**
-- 1 vCPU, 2GB memory shared across 5 containers
+- 1 vCPU, 2GB memory shared across 6 containers
 - Potential for slow performance or thrashing under load
 - May need to scale up resources during development
+
+**Testing Strategy:**
+
+The distributed architecture (6 containers, async flows, eventual consistency) requires a deliberate testing approach:
+
+*Component Testing:*
+- Real inbound client libraries (published by each service) exercise the service's public API
+- Real database containers may run for intermediate/internal data storage within the service
+- Outbound dependencies use abstracted interfaces (Repository pattern, Outbox interface)
+- Tests inject mock implementations of outbound interfaces to control and verify what crosses service boundaries
+- No direct mocking of database or messaging layer APIs
+- Decision deferred: Static vs. dynamic mock implementation
+
+*End-to-End Testing:*
+- Full docker-compose stack with all infrastructure containers
+- Application code compiled and run natively
+- Validates complete flows across service boundaries
+
+*Contract Integrity:*
+- Shared schema/type definitions across services prevent interface drift
+- Component tests validate public API contracts via real client libraries
+- End-to-end tests catch integration issues as a final gate
+
+*Decision Deferred — Integration Testing:*
+- Integration tests verify specific component pairs with real infrastructure (e.g., service + real Postgres, service + real Redpanda) without the full E2E stack
+- Faster feedback than E2E, catches infrastructure-specific bugs (SQL, serialization, consumer config) earlier
+- Integration test infrastructure can also serve as a foundation for load testing — real components under controlled, repeatable conditions
+- Current strategy (component + E2E) is sufficient initially; add integration layer if E2E tests frequently catch issues that should have been caught earlier
 
 ### 8.3 Migration Considerations
 
@@ -740,3 +885,207 @@ to use case definition.
 - 7-day retention limits storage costs
 - Single task deployment minimizes compute costs
 - Can shut down dev environment when not in use
+
+## 9. CI/CD Pipeline
+
+### 9.1 Build Artifacts
+
+| Artifact | Build | Storage |
+|----------|-------|---------|
+| Go binary | `go build` | Embedded in Docker image |
+| Python AI service | `pip install` in Dockerfile | Docker image |
+| Go Docker image | `docker build` | ECR |
+| Python Docker image | `docker build` | ECR |
+| Terraform state | N/A | S3 (remote backend) |
+
+* **ECR repositories** are provisioned by Terraform in platform-infra
+* **Dependency order:** platform-infra must be deployed first to create ECR repos before platform-services can push images
+
+### 9.2 Pipeline Stages
+
+| Stage | Tool | Repo | Trigger |
+|-------|------|------|---------|
+| Lint + format | GitHub Actions | platform-services | PR to main |
+| Unit + component tests | GitHub Actions | platform-services | PR to main |
+| Security scan | GitHub Actions | platform-services | PR to main |
+| Terraform validate/plan | GitHub Actions | platform-infra | PR to main |
+| Build + Push to ECR | GitHub Actions | platform-services | Merge to main |
+| Terraform apply (infra) | GitHub Actions | platform-infra | Merge to main |
+| Terraform apply (app deploy) | GitHub Actions | platform-services/deploy | Merge to main |
+| E2E tests | GitHub Actions | TBD | Periodic (daily) or post-deploy |
+
+### 9.3 Deployment Model
+
+| Environment | Method | Automation |
+|-------------|--------|------------|
+| Dev | Terraform via GitHub Actions | Fully automated on merge to main |
+| Staging/Prod | AWS CodePipeline | Deferred |
+
+* **Dev environment:** Merge to main triggers build → push to ECR → `terraform apply` → ECS rolls out new containers. No manual approval.
+* **Staging/Prod (deferred):** AWS CodePipeline provides native ECS deployment strategies (rolling updates, blue-green) and approval gates not available in Terraform-only deployments. This additional control is appropriate for production environments.
+
+### 9.4 Tool Selection Rationale
+
+* **GitHub Actions** for CI (test, build, push, Terraform):
+  - Native GitHub integration
+  - Familiar workflow for developers
+  - Generous free tier for single-developer project
+  - Can authenticate to AWS for ECR push and Terraform apply
+
+* **Terraform** for deployment (dev):
+  - Single tool for infrastructure and deployment — simpler mental model
+  - Image version tracked in git (GitOps model)
+  - Easy rollback by applying previous commit
+  - Sufficient for dev environment without sophisticated deployment strategies
+
+* **AWS CodePipeline** for deployment (staging/prod, deferred):
+  - Native ECS deployment strategies (rolling, blue-green, canary)
+  - Built-in approval gates for production safety
+  - AWS-native visibility and logging
+  - Appropriate when deployment frequency increases or team grows
+
+## 10. Error Handling Philosophy
+
+### 10.1 Delivery Guarantees
+
+* **Decision:** At-least-once delivery
+* **Implication:** Events may be delivered more than once; consumers must handle duplicates
+* **Mechanism:** Kafka/Redpanda offset management — offset is only committed after successful processing
+
+### 10.2 Idempotency
+
+* **Decision:** 5-minute deduplication window for consumers
+* **Implementation:**
+  - Dev (single instance): In-memory cache sufficient
+  - Production (multi-instance): Shared state required (Redis or Postgres) for distributed deduplication
+* **Defense in depth:** Operations should be idempotent where possible (upsert vs. insert, PUT vs. POST)
+* **Decision deferred:** Specific shared state implementation for production
+
+### 10.3 Data Flow and Failure Points
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ WRITE PATH                                                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Client                                                                     │
+│    │                                                                        │
+│    ▼                                                                        │
+│  Ingestion Service                                                          │
+│    │                                                                        │
+│    ▼                                                                        │
+│  Outbox Table (Postgres)  ◄─── Failure A: Write fails, return error to client
+│    │                                                                        │
+│    ▼                                                                        │
+│  Background Processor (NOTIFY/LISTEN)                                       │
+│    │                                                                        │
+│    ├──► Event Store (Postgres)  ◄─── Failure B: Write fails, retry, outbox  │
+│    │                                  entry remains                         │
+│    │                                                                        │
+│    └──► Redpanda publish  ◄─── Failure C: Publish fails, retry, outbox      │
+│                                entry remains                                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CONSUMER PATH                                                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Redpanda                                                                   │
+│    │                                                                        │
+│    ├──► Event Handler  ◄─── Failure D: Projection update fails              │
+│    │      │                                                                 │
+│    │      └──► Projections (Postgres)                                       │
+│    │                                                                        │
+│    ├──► AI Inference Service  ◄─── Failure E: Model processing fails        │
+│    │      │                                                                 │
+│    │      └──► Results (Postgres or Redpanda)                               │
+│    │                                                                        │
+│    └──► Action Orchestrator  ◄─── Failure F: Webhook delivery fails         │
+│           │                                                                 │
+│           └──► External webhooks/alerts                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 10.4 Failure Response Strategies
+
+Consumer failures are handled differently based on the failure type:
+
+#### Retry Strategy (All Consumers)
+* **Decision:** Hybrid retry with exponential backoff
+  - 1st retry: Immediate
+  - 2nd retry: 1 second delay
+  - 3rd retry: 2 second delay
+  - Give up after 3 retries (~3 seconds total)
+
+#### Differentiated Failure Handling
+
+| Failure | Cause | Strategy | DLQ? |
+|---------|-------|----------|------|
+| D: Event Handler | Postgres down (infra outage) | Block — don't commit offset, retry until recovered | No |
+| D: Event Handler | Bad event data (poison message) | Send to DLQ, commit offset, continue | Yes (Postgres) |
+| E: AI Inference | Model error (poison message) | Send to DLQ, commit offset, continue | Yes (Postgres) |
+| F: Webhook | Endpoint down | Circuit breaker, log failure, short-circuit | No |
+| F: Webhook | Bad payload | Log failure, possibly DLQ for debugging | Maybe |
+
+**Rationale:**
+- **Infrastructure outage:** Blocking is correct — processing more events will also fail. Wait for recovery.
+- **Poison message:** Isolate the bad event in DLQ, continue processing. Can replay or debug later.
+- **External dependency down:** Not our fault — circuit breaker prevents wasting resources on a dead endpoint.
+
+### 10.5 Dead Letter Queue (DLQ)
+
+* **Decision:** Per-consumer DLQ in Postgres
+* **Reasoning:**
+  - Durable beyond Redpanda's 24-hour retention
+  - Queryable (find failures by consumer, time range, error type)
+  - Consistent with single-Postgres-stack decision
+
+**DLQ Table Schema:**
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| dlq_id | UUID | Unique identifier |
+| consumer | STRING | Which consumer failed (event-handler, ai-inference) |
+| event_id | UUID | Original event ID |
+| event_payload | JSONB | Full event data for replay |
+| error_message | TEXT | Why it failed |
+| failed_at | TIMESTAMPTZ | When it failed |
+| retry_count | INTEGER | How many retries were attempted |
+| status | STRING | `pending`, `replayed`, `discarded` |
+
+**Replay options (deferred):**
+- Manual: Operator queries DLQ, fixes issue, triggers replay
+- Automated: Background job periodically retries `pending` entries
+- On-demand: API endpoint to replay specific events
+
+### 10.6 Circuit Breaker for Webhooks
+
+* **Decision:** Blacklist pattern with expiry for failing webhook endpoints
+* **Implementation:**
+  - Track consecutive failures per endpoint
+  - After threshold (e.g., 5 failures), add endpoint to blacklist
+  - Blacklisted endpoints fail immediately (short-circuit) — no timeout wait
+  - Blacklist entries expire after cooldown period (e.g., 5 minutes)
+  - After expiry, next call is attempted; if success → normal, if fail → re-blacklist
+* **Storage:** Redis or similar (supports TTL-based expiry)
+* **Reasoning:**
+  - Don't waste resources calling dead endpoints
+  - Faster failure response (no 30-second timeout)
+  - Automatic recovery when endpoint comes back
+  - Endpoint downtime is consumer's responsibility (SLA violation), not ours to infinitely retry
+
+**Decision deferred:**
+- Specific threshold and cooldown values
+- Whether to notify consumers when their endpoint is blacklisted
+- Redis vs. alternative for blacklist storage
+
+### 10.7 Error Visibility
+
+* **Decision:** Errors logged for devops visibility
+* **Current state:** Log errors with full context (event ID, consumer, error message, stack trace)
+* **Decision deferred:**
+  - Dashboard for error visibility (count, trends, DLQ depth)
+  - Event ingestion for errors (errors as events for downstream processing/alerting)
+  - Alerting on error thresholds (PagerDuty, Slack)
