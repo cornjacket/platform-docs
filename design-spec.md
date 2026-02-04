@@ -19,6 +19,7 @@ This document contains operational details, configuration parameters, and implem
 | [0008](decisions/0008-cicd-pipeline-strategy.md) | CI/CD Pipeline Strategy |
 | [0009](decisions/0009-ai-inference-stream-processor.md) | AI Inference Stream Processor |
 | [0010](decisions/0010-database-per-service-pattern.md) | Database-Per-Service Pattern |
+| [0011](decisions/0011-coordinated-tagging-across-repos.md) | Coordinated Tagging Across Repos |
 
 ---
 
@@ -105,7 +106,7 @@ Each service receives its own database URL as configuration (see ADR-0010).
 postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 ```
 
-**Migration Location:** Each service owns its migrations in `internal/<service>/migrations/`.
+**Migration Location:** Each service owns its migrations in `internal/services/<service>/migrations/`.
 
 ---
 

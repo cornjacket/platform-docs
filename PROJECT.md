@@ -95,6 +95,38 @@ Implementation decisions made during development (not ADR-level).
 
 ---
 
+## Creating Milestones
+
+Milestones use coordinated Git tags across all three repos (see ADR-0011).
+
+### When to Create a Milestone
+
+- End of a development phase
+- Before significant architectural changes
+- After completing a major feature
+- Any point you might want to return to for debugging
+
+### How to Create a Milestone
+
+1. Ensure all repos are committed and clean
+2. Choose a tag name: `milestone-NNN-description`
+3. Apply the same tag to all three repos:
+
+```bash
+# In each repo (platform-docs, platform-services, platform-infra)
+git tag -a milestone-001-phase1-ingestion -m "Phase 1: Ingestion service complete"
+```
+
+4. Record the milestone below
+
+### Milestone History
+
+| Tag | Date | Description |
+|-----|------|-------------|
+| `milestone-001-phase1-dbperservice` | 2026-02-04 | Ingestion service + database-per-service pattern |
+
+---
+
 ## Reference
 
 - [ADRs](decisions/) — Architectural decisions

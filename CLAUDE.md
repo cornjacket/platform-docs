@@ -41,4 +41,15 @@ Repos communicate via **AWS SSM Parameter Store**. Infrastructure publishes reso
 - Dev environment runs as a single ECS Fargate task (1 vCPU, 2GB RAM) with 5 sidecar containers
 - Message format is JSON (binary migration deferred)
 - CQRS with eventual consistency between write and read sides
+- Each service owns its database and migrations (see ADR-0010)
 - Many production decisions are explicitly deferred (see ADR 0001)
+
+## Milestones and Tagging
+
+When creating milestones (see ADR-0011):
+
+1. **Apply the same Git tag to all three repos** (platform-docs, platform-services, platform-infra)
+2. Use format: `milestone-NNN-description` (e.g., `milestone-001-phase1-ingestion`)
+3. Record the milestone in `PROJECT.md`
+
+This ensures docs, infrastructure, and application code are aligned at known points for debugging and reproducibility.
