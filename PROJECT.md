@@ -8,9 +8,9 @@
 
 ## Current Focus
 
-- [ ] Set up Go module and project structure
-- [ ] Create docker-compose.yml with Postgres + Redpanda
-- [ ] Implement minimal Ingestion endpoint (HTTP → Outbox)
+- [ ] Start docker-compose and run migrations
+- [ ] Test ingestion endpoint manually (curl)
+- [ ] Implement Outbox Processor (NOTIFY/LISTEN)
 
 ## Milestones
 
@@ -21,10 +21,10 @@
 HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (Event Handler)
 ```
 
-- [ ] Go module initialized with directory structure
-- [ ] docker-compose.yml with Postgres + Redpanda
-- [ ] Database migrations (outbox, event_store, projections tables)
-- [ ] Ingestion Service: HTTP endpoint → outbox write
+- [x] Go module initialized with directory structure
+- [x] docker-compose.yml with Postgres + Redpanda
+- [x] Database migrations (outbox, event_store, projections, dlq tables)
+- [x] Ingestion Service: HTTP endpoint → outbox write
 - [ ] Outbox Processor: NOTIFY/LISTEN → event store + Redpanda publish
 - [ ] Event Handler: Redpanda consumer → projection update
 - [ ] Basic logging with structured JSON
