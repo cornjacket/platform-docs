@@ -1,6 +1,6 @@
 # Cornjacket Platform Design Specification
 
-**Last Updated:** 2026-01-29
+**Last Updated:** 2026-02-04
 **Status:** Living Document
 
 This document contains operational details, configuration parameters, and implementation specifics that may change over time. For architectural decisions and rationale, see the ADRs in `decisions/`.
@@ -18,6 +18,7 @@ This document contains operational details, configuration parameters, and implem
 | [0007](decisions/0007-local-and-cloud-development-strategy.md) | Local and Cloud Development Strategy |
 | [0008](decisions/0008-cicd-pipeline-strategy.md) | CI/CD Pipeline Strategy |
 | [0009](decisions/0009-ai-inference-stream-processor.md) | AI Inference Stream Processor |
+| [0010](decisions/0010-database-per-service-pattern.md) | Database-Per-Service Pattern |
 
 ---
 
@@ -86,6 +87,25 @@ This document contains operational details, configuration parameters, and implem
 | EFS storage | ~$5-10/month |
 | Logs/metrics | ~$5/month |
 | **Total** | **~$40-55/month** |
+
+### 2.7 Service Database Configuration
+
+Each service receives its own database URL as configuration (see ADR-0010).
+
+| Environment Variable | Service | Tables Owned |
+|---------------------|---------|--------------|
+| `INGESTION_DATABASE_URL` | Ingestion + Outbox Processor | outbox, event_store |
+| `EVENTHANDLER_DATABASE_URL` | Event Handler | projections, dlq |
+| `QUERY_DATABASE_URL` | Query Service | (none - reads from Event Handler) |
+| `TSDB_DATABASE_URL` | TSDB Writer | timeseries tables, dlq |
+| `ACTIONS_DATABASE_URL` | Action Orchestrator | action_config, dlq |
+
+**Default (Dev):** All variables point to the same database:
+```
+postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
+```
+
+**Migration Location:** Each service owns its migrations in `internal/<service>/migrations/`.
 
 ---
 
