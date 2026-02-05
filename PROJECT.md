@@ -27,6 +27,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] Event Handler: Redpanda consumer → projection update
 - [ ] Basic logging with structured JSON
 - [ ] Manual end-to-end test (curl → check projection)
+- [ ] Unit tests
 
 **Skipping:** Query Service, Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
 
