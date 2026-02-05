@@ -22,6 +22,7 @@ This document contains operational details, configuration parameters, and implem
 | [0011](decisions/0011-coordinated-tagging-across-repos.md) | Coordinated Tagging Across Repos |
 | [0012](decisions/0012-outbox-processing-strategy.md) | Outbox Processing Strategy |
 | [0013](decisions/0013-uuid-v7-standardization.md) | UUID v7 Standardization |
+| [0014](decisions/0014-event-handler-consumer-strategy.md) | Event Handler Consumer Strategy |
 
 ---
 
