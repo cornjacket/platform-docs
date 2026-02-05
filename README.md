@@ -77,7 +77,34 @@ The centralized source of truth for the platform’s evolution and standards.
 
 ---
 
+## Key Documentation
+
+### platform-docs (this repo)
+
+| Document | Purpose |
+|----------|---------|
+| [PROJECT.md](PROJECT.md) | Current phase, progress, and tagging policy |
+| [design-spec.md](design-spec.md) | System design: data flow, event types, schemas, configuration |
+| [decisions/](decisions/) | Architectural Decision Records (ADRs) |
+| [CLAUDE.md](CLAUDE.md) | Instructions for Claude Code AI assistant |
+
+### platform-services
+
+| Document | Purpose |
+|----------|---------|
+| [ARCHITECTURE.md](../platform-services/ARCHITECTURE.md) | Code structure, Clean Architecture alignment, dependency rules |
+| [DEVELOPMENT.md](../platform-services/DEVELOPMENT.md) | Build patterns, local dev setup, coding conventions |
+| [tasks/](../platform-services/tasks/) | Feature implementation task documents |
+
+### platform-infra
+
+| Document | Purpose |
+|----------|---------|
+| platform-standards.md | Infrastructure standards and conventions |
+
+---
+
 ## Integration Pattern: The "Handshake"
-To maintain the separation of concerns, the repositories do not share code. Instead, they communicate through **AWS SSM Parameter Store**. 
+To maintain the separation of concerns, the repositories do not share code. Instead, they communicate through **AWS SSM Parameter Store**.
 1. **Infra** publishes resource IDs (like vpc-id or db-endpoint).
 2. **Services** retrieve these IDs during the deployment phase to "handshake" with the environment.

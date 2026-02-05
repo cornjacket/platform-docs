@@ -112,22 +112,117 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ---
 
-## 3. Message Bus Configuration
+## 3. Data Flow
 
-### 3.1 Topic Design
+### 3.1 Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              WRITE PATH                                      │
+│                                                                              │
+│   HTTP ──▶ Ingestion ──▶ Outbox ──▶ Outbox Processor ──┬──▶ Event Store     │
+│   (MQTT)     Service      Table                        │                     │
+│                                                        └──▶ Redpanda        │
+│                                                              │               │
+└──────────────────────────────────────────────────────────────┼───────────────┘
+                                                               │
+┌──────────────────────────────────────────────────────────────┼───────────────┐
+│                              READ PATH                       ▼               │
+│                                                                              │
+│   Query ◀── Projections ◀── Event Handler ◀── Redpanda                      │
+│   Service      Table                            (consumer)                   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 3.2 Write Path
+
+1. **Entry:** HTTP request (or MQTT in Phase 2) arrives at Ingestion Service
+2. **Validate:** Ingestion Service validates the event envelope
+3. **Persist:** Event written to `outbox` table (durable, transactional)
+4. **Process:** Outbox Processor picks up entry (NOTIFY/LISTEN + watchdog)
+5. **Fan-out:**
+   - Write to `event_store` table (append-only log)
+   - Publish to Redpanda topic (based on event_type prefix)
+6. **Complete:** Delete from `outbox` table
+
+### 3.3 Read Path
+
+1. **Consume:** Event Handler subscribes to Redpanda topics
+2. **Dispatch:** Route event to handler based on event_type
+3. **Project:** Update projection in `projections` table
+4. **Commit:** Commit consumer offset (at-least-once delivery)
+
+### 3.4 Query Path
+
+1. **Request:** Query Service receives HTTP request
+2. **Read:** Fetch from `projections` table (pre-computed state)
+3. **Return:** Return projection data to client
+
+---
+
+## 4. Event Types
+
+Events flow through the system via the Outbox Processor → Redpanda → Event Handler pipeline. The `event_type` field determines topic routing and projection handling.
+
+### 4.1 Topic Routing
+
+The Outbox Processor routes events to topics based on `event_type` prefix:
+
+| Prefix | Topic | Description |
+|--------|-------|-------------|
+| `sensor.*` | sensor-events | IoT sensor data |
+| `user.*` | user-actions | User activity |
+| `*` (default) | system-events | System/operational events |
+
+### 4.2 Event Catalog
+
+| Event Type | Payload Schema | Projection |
+|------------|----------------|------------|
+| `sensor.reading` | `{"value": float, "unit": string}` | `sensor_state` |
+| `user.login` | `{"user_id": string, "ip": string}` | `user_session` |
+| `system.alert` | `{"level": string, "message": string}` | (none) |
+
+### 4.3 Example Events
+
+```json
+// sensor.reading — aggregate_id is the device
+{"event_type": "sensor.reading", "aggregate_id": "device-001", "payload": {"value": 72.5, "unit": "fahrenheit"}}
+
+// user.login — aggregate_id is the user
+{"event_type": "user.login", "aggregate_id": "user-123", "payload": {"user_id": "user-123", "ip": "192.168.1.1"}}
+
+// system.alert — aggregate_id is the source component
+{"event_type": "system.alert", "aggregate_id": "cluster-1", "payload": {"level": "warn", "message": "High memory usage"}}
+```
+
+### 4.4 Projections
+
+| Projection Type | Purpose | Updated By |
+|-----------------|---------|------------|
+| `sensor_state` | Latest sensor reading per device | `sensor.reading` |
+| `user_session` | Last login info per user | `user.login` |
+
+New event types and projections are added as features require them.
+
+---
+
+## 5. Message Bus Configuration
+
+### 5.1 Topic Design
 
 - **Pattern:** Per-event-type topics
 - **Topics:** `sensor-events`, `user-actions`, `system-events`
 - **Rationale:** Clean separation, consumers subscribe to needed types, avoids topic explosion
 
-### 3.2 Retention Policy
+### 5.2 Retention Policy
 
 | Environment | Retention |
 |-------------|-----------|
 | Dev | 24 hours |
 | Staging/Prod | TBD |
 
-### 3.3 Partition Strategy
+### 5.3 Partition Strategy
 
 | Environment | Partitions per Topic |
 |-------------|---------------------|
@@ -138,9 +233,9 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ---
 
-## 4. Database Schemas
+## 6. Database Schemas
 
-### 4.1 Outbox Table
+### 6.1 Outbox Table
 
 | Column | Type | Purpose |
 |--------|------|---------|
@@ -149,7 +244,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 | event_payload | JSONB | The full event envelope (same format as event store) |
 | retry_count | INTEGER | Number of processing attempts (for monitoring/alerting) |
 
-### 4.2 Event Store
+### 6.2 Event Store
 
 | Column | Type | Purpose |
 |--------|------|---------|
@@ -160,7 +255,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 | payload | JSONB | Event-specific data |
 | metadata | JSONB | Trace IDs, source info, schema version |
 
-### 4.3 Dead Letter Queue (DLQ)
+### 6.3 Dead Letter Queue (DLQ)
 
 | Column | Type | Purpose |
 |--------|------|---------|
@@ -175,9 +270,9 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ---
 
-## 5. Action Orchestrator Configuration
+## 7. Action Orchestrator Configuration
 
-### 5.1 Webhook Retry Logic
+### 7.1 Webhook Retry Logic
 
 | Setting | Initial Default | Notes |
 |---------|-----------------|-------|
@@ -185,13 +280,13 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 | Backoff delays | 1s, 2s, 4s, 8s, 16s | Exponential backoff |
 | After max retries | Log failure and continue | No blocking |
 
-### 5.2 Timeout Handling
+### 7.2 Timeout Handling
 
 | Setting | Initial Default | Notes |
 |---------|-----------------|-------|
 | Per-webhook timeout | 30 seconds | Subject to tuning |
 
-### 5.3 Rate Limiting
+### 7.3 Rate Limiting
 
 | Setting | Initial Default | Notes |
 |---------|-----------------|-------|
@@ -202,7 +297,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 - Per-endpoint rate limits for production
 - Shared state management (Redis) for multi-instance deployments
 
-### 5.4 Deduplication
+### 7.4 Deduplication
 
 | Setting | Initial Default | Notes |
 |---------|-----------------|-------|
@@ -214,7 +309,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 - Sophisticated deduplication logic (similarity matching, alert grouping)
 - Persistent deduplication state (Redis) for production
 
-### 5.5 Circuit Breaker for Webhooks
+### 7.5 Circuit Breaker for Webhooks
 
 | Setting | Initial Default | Notes |
 |---------|-----------------|-------|
@@ -224,9 +319,9 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ---
 
-## 6. Scale & Performance Requirements (Dev)
+## 8. Scale & Performance Requirements (Dev)
 
-### 6.1 Target Throughput
+### 8.1 Target Throughput
 
 | Metric | Target | Notes |
 |--------|--------|-------|
@@ -235,7 +330,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 **Note:** These targets are intentionally orders of magnitude below production ambitions to optimize for cost and simplicity during the learning phase.
 
-### 6.2 Latency Requirements
+### 8.2 Latency Requirements
 
 | Metric | Target | Notes |
 |--------|--------|-------|
@@ -247,7 +342,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 **Decision deferred:** Production SLAs (p50, p95, p99 latency targets)
 
-### 6.3 Data Retention Policies
+### 8.3 Data Retention Policies
 
 | Data Store | Retention | Notes |
 |------------|-----------|-------|
@@ -264,9 +359,9 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ---
 
-## 7. Observability
+## 9. Observability
 
-### 7.1 Logging
+### 9.1 Logging
 
 | Aspect | Decision |
 |--------|----------|
@@ -276,7 +371,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 **Trade-offs:** CloudWatch query language less powerful than Elasticsearch, but sufficient for dev
 
-### 7.2 Metrics
+### 9.2 Metrics
 
 | Aspect | Decision |
 |--------|----------|
@@ -284,7 +379,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 | Scope | Basic/automatic metrics (CPU, memory, network) |
 | Custom metrics | Deferred (CloudWatch SDK available) |
 
-### 7.3 Distributed Tracing
+### 9.3 Distributed Tracing
 
 | Aspect | Decision |
 |--------|----------|
@@ -294,7 +389,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 **Rationale:** Adding instrumentation now is low-cost. Can enable/disable collection without code changes.
 
-### 7.4 Dashboards & Visualization
+### 9.4 Dashboards & Visualization
 
 | Tool | Purpose |
 |------|---------|
@@ -304,9 +399,9 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ---
 
-## 8. Disaster Recovery (Dev)
+## 10. Disaster Recovery (Dev)
 
-### 8.1 Backup Strategy
+### 10.1 Backup Strategy
 
 **Decision:** No formal backup strategy for dev environment
 
@@ -320,14 +415,14 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 - Redpanda: Message buffer (24-hour retention)
 - EMQX: Session and configuration data
 
-### 8.2 Recovery Procedures
+### 10.2 Recovery Procedures
 
 **Recovery approach:**
 1. Redeploy infrastructure using Terraform
 2. Deploy latest application containers
 3. Regenerate test data using seed scripts
 
-### 8.3 Recovery Objectives
+### 10.3 Recovery Objectives
 
 | Objective | Requirement | Notes |
 |-----------|-------------|-------|
@@ -344,9 +439,9 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ---
 
-## 9. Message Format
+## 11. Message Format
 
-### 9.1 Current Format
+### 11.1 Current Format
 
 | Aspect | Decision |
 |--------|----------|
@@ -354,7 +449,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 | Scope | Outbox table, event store, Redpanda message bus |
 | Serialization | Single path (Ingestion Service serializes once) |
 
-### 9.2 Migration Path
+### 11.2 Migration Path
 
 | Phase | Format |
 |-------|--------|
@@ -365,7 +460,7 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ---
 
-## 10. Document History
+## 12. Document History
 
 | Date | Change |
 |------|--------|
