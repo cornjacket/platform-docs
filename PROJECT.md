@@ -31,14 +31,16 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 **Skipping:** Query Service, Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
 
 ### Phase 2: Local Full Stack
-**Goal:** All services running locally, both entry points
+**Goal:** All services running locally as sidecar pattern, both entry points
 
 - [ ] Add Traefik to docker-compose (HTTP routing)
 - [ ] Add EMQX to docker-compose (MQTT broker)
 - [ ] Query Service: read from projections
+- [ ] Action Orchestrator: webhook delivery
 - [ ] MQTT ingestion path (EMQX → Ingestion Service)
+- [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
+- [ ] E2E local test: HTTP + MQTT → projections → query
 - [ ] Component tests with real client libraries
-- [ ] Mock outbound interfaces for testing
 
 **Skipping:** AWS, CI/CD, AI Service
 
@@ -54,12 +56,12 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 **Skipping:** ECR push, AWS deployment
 
 ### Phase 4: AWS Dev Environment
-**Goal:** Running in ECS with the full sidecar pattern
+**Goal:** Deploy validated sidecar pattern to ECS
 
 - [ ] platform-infra: VPC, subnets, security groups
 - [ ] platform-infra: ECS cluster, ECR repositories
 - [ ] platform-infra: EFS/EBS for persistence
-- [ ] platform-services/deploy: ECS task definition (Terraform)
+- [ ] platform-services/deploy: ECS task definition (Terraform, mirrors docker-compose)
 - [ ] GitHub Actions: build → push to ECR → terraform apply
 - [ ] E2E smoke test against deployed environment
 - [ ] Verify all access patterns (HTTP, MQTT, dashboards)
@@ -69,7 +71,6 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 
 - [ ] AI Inference Service (Python/FastAPI)
 - [ ] TSDB Writer (optional consumer)
-- [ ] Action Orchestrator with webhook delivery
 - [ ] Circuit breaker for webhooks
 - [ ] DLQ implementation
 - [ ] Observability: structured logging, CloudWatch metrics
