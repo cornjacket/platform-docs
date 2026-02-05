@@ -1,6 +1,6 @@
 # Cornjacket Platform - Project Plan
 
-**Last Updated:** 2026-02-03
+**Last Updated:** 2026-02-05
 
 ## Current Phase
 
@@ -8,7 +8,7 @@
 
 ## Current Focus
 
-- [ ] Implement Outbox Processor (NOTIFY/LISTEN) — [Task 001](../platform-services/tasks/001-outbox-processor.md)
+- [ ] Implement Event Handler (Redpanda consumer → projection update)
 
 ## Milestones
 
@@ -23,7 +23,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] docker-compose.yml with Postgres + Redpanda
 - [x] Database migrations (outbox, event_store, projections, dlq tables)
 - [x] Ingestion Service: HTTP endpoint → outbox write
-- [ ] Outbox Processor: NOTIFY/LISTEN → event store + Redpanda publish
+- [x] Outbox Processor: NOTIFY/LISTEN → event store + Redpanda publish
 - [ ] Event Handler: Redpanda consumer → projection update
 - [ ] Basic logging with structured JSON
 - [ ] Manual end-to-end test (curl → check projection)
@@ -93,35 +93,16 @@ Implementation decisions made during development (not ADR-level).
 
 ---
 
-## Creating Milestones
+## Tagging Policy
 
-Milestones use coordinated Git tags across all three repos (see ADR-0011).
+Tags are created at **phase completion** and **releases** only. This avoids tag proliferation while providing meaningful checkpoints. See ADR-0011.
 
-### When to Create a Milestone
+| Tag Type | Format | Example |
+|----------|--------|---------|
+| Phase | `phase-N-description` | `phase-1-local-skeleton` |
+| Release | `vX.Y.Z` | `v0.1.0` |
 
-- End of a development phase
-- Before significant architectural changes
-- After completing a major feature
-- Any point you might want to return to for debugging
-
-### How to Create a Milestone
-
-1. Ensure all repos are committed and clean
-2. Choose a tag name: `milestone-NNN-description`
-3. Apply the same tag to all three repos:
-
-```bash
-# In each repo (platform-docs, platform-services, platform-infra)
-git tag -a milestone-001-phase1-ingestion -m "Phase 1: Ingestion service complete"
-```
-
-4. Record the milestone below
-
-### Milestone History
-
-| Tag | Date | Description |
-|-----|------|-------------|
-| `milestone-001-phase1-dbperservice` | 2026-02-04 | Ingestion service + database-per-service pattern |
+Apply the same tag to all three repos. Intermediate progress is tracked via commits, not tags.
 
 ---
 

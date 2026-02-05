@@ -15,29 +15,29 @@ When debugging issues or reproducing a specific state, it's crucial to know whic
 
 ## Decision
 
-**Use coordinated Git tags across all three repositories to mark milestones and releases.**
+**Use coordinated Git tags across all three repositories to mark phase completions and releases.**
 
 ### Tag Format
 
 | Tag Type | Format | Example | Use Case |
 |----------|--------|---------|----------|
-| Milestone | `milestone-NNN-description` | `milestone-001-phase1-ingestion` | Development checkpoints |
+| Phase | `phase-N-description` | `phase-1-local-skeleton` | Development phase completion |
 | Release | `vX.Y.Z` | `v0.1.0` | Production releases |
 
 ### Rules
 
-1. **Same tag, all repos:** When creating a milestone or release, apply the identical tag to all three repos
+1. **Same tag, all repos:** When creating a phase tag or release, apply the identical tag to all three repos
 2. **Atomic tagging:** Tag all repos in a single session to avoid drift
-3. **Tag message:** Include a brief description of what the milestone represents
+3. **Tag message:** Include a brief description of what the phase represents
 4. **Never move tags:** Tags are immutable; create a new tag if needed
+5. **Tags at phase completion only:** Intermediate progress is tracked via commits, not tags
 
-### When to Create Milestones
+### When to Create Tags
 
-- End of a development phase (e.g., Phase 1 complete)
-- Before significant architectural changes
-- After completing a major feature
-- Before deploying to a new environment
-- Any point you might want to return to
+- **Phase completion:** End of a development phase (e.g., Phase 1 complete)
+- **Releases:** Production deployments
+
+Avoid tagging individual features or minor milestones to prevent tag proliferation.
 
 ## Rationale
 

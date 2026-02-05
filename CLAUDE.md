@@ -57,12 +57,13 @@ Task documents define what, why, how, and acceptance criteria. See `platform-ser
 
 This ensures designs are reviewed before implementation and creates a record of feature decisions.
 
-## Milestones and Tagging
+## Tagging Policy
 
-When creating milestones (see ADR-0011):
+Tags are created at **phase completion** and **releases** only (see ADR-0011). This avoids tag proliferation while providing meaningful checkpoints.
 
-1. **Apply the same Git tag to all three repos** (platform-docs, platform-services, platform-infra)
-2. Use format: `milestone-NNN-description` (e.g., `milestone-001-phase1-ingestion`)
-3. Record the milestone in `PROJECT.md`
+| Tag Type | Format | Example |
+|----------|--------|---------|
+| Phase | `phase-N-description` | `phase-1-local-skeleton` |
+| Release | `vX.Y.Z` | `v0.1.0` |
 
-This ensures docs, infrastructure, and application code are aligned at known points for debugging and reproducibility.
+Apply the same tag to all three repos. Intermediate progress is tracked via commits, not tags.
