@@ -20,6 +20,8 @@ This document contains operational details, configuration parameters, and implem
 | [0009](decisions/0009-ai-inference-stream-processor.md) | AI Inference Stream Processor |
 | [0010](decisions/0010-database-per-service-pattern.md) | Database-Per-Service Pattern |
 | [0011](decisions/0011-coordinated-tagging-across-repos.md) | Coordinated Tagging Across Repos |
+| [0012](decisions/0012-outbox-processing-strategy.md) | Outbox Processing Strategy |
+| [0013](decisions/0013-uuid-v7-standardization.md) | UUID v7 Standardization |
 
 ---
 

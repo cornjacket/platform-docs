@@ -44,6 +44,19 @@ Repos communicate via **AWS SSM Parameter Store**. Infrastructure publishes reso
 - Each service owns its database and migrations (see ADR-0010)
 - Many production decisions are explicitly deferred (see ADR 0001)
 
+## Feature Development Process
+
+When adding features to platform-services:
+
+1. **Create a task document** in `platform-services/tasks/NNN-feature-name.md`
+2. **Review the design** before writing code (status: Draft → Ready)
+3. **Implement** when approved (status: In Progress)
+4. **Complete** when done and committed (status: Complete)
+
+Task documents define what, why, how, and acceptance criteria. See `platform-services/tasks/README.md` for the template and convention.
+
+This ensures designs are reviewed before implementation and creates a record of feature decisions.
+
 ## Milestones and Tagging
 
 When creating milestones (see ADR-0011):

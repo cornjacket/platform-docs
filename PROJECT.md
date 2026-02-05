@@ -8,9 +8,7 @@
 
 ## Current Focus
 
-- [ ] Start docker-compose and run migrations
-- [ ] Test ingestion endpoint manually (curl)
-- [ ] Implement Outbox Processor (NOTIFY/LISTEN)
+- [ ] Implement Outbox Processor (NOTIFY/LISTEN) — [Task 001](../platform-services/tasks/001-outbox-processor.md)
 
 ## Milestones
 

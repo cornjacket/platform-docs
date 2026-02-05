@@ -4,31 +4,24 @@ This workspace organizes the platform into domain-specific repositories to enfor
 
 ## Global Directory Structure
 
+<!-- Keep this tree concise: max 3 levels deep from cornjacket-platform/ -->
 ```text
-cornjacket-platform/             # The "Wrapper" Parent Folder (Not a Git repo)
+cornjacket-platform/             # Wrapper folder (not a Git repo)
 │
-├── platform-infra/              # [Git Repo 1] The Infrastructure Foundation
-│   ├── platform-infra-networking/
-│   │   ├── dev/                 # Terraform for the Dev VPC
-│   │   ├── modules/             # Reusable network logic
-│   │   └── specification.md     # Networking blueprint
-│   ├── platform-infra-data/     # (Phase 2) Databases & S3
-│   └── platform-standards.md
+├── platform-infra/              # [Git Repo] Infrastructure foundation
+│   └── ...                      # Terraform modules for VPC, networking, data
 │
-├── platform-services/           # [Git Repo 2] The Application Monolith
-│   ├── apps/                    # All individual service code
-│   │   ├── auth-service/
-│   │   ├── api-gateway/
-│   │   └── worker-service/
-│   ├── shared/                  # Shared libraries/utilities
-│   ├── deploy/                  # Terraform to "glue" apps to infra
-│   │   ├── data.tf              # Pulls VPC ID from SSM
-│   │   └── main.tf              # Deploys containers/Lambdas
-│   └── docker-compose.yml       # Local development setup
+├── platform-services/           # [Git Repo] Application monolith
+│   ├── cmd/platform/            # Single binary entry point
+│   ├── internal/shared/         # Shared config, domain, infrastructure
+│   ├── internal/services/       # Individual services (ingestion, query, etc.)
+│   ├── tasks/                   # Feature task documents
+│   └── deploy/                  # Service deployment Terraform
 │
-└── platform-docs/               # [Git Repo 3] Global Documentation
-    ├── architecture-diagrams/
-    └── onboarding-guides.md
+└── platform-docs/               # [Git Repo] Global documentation
+    ├── decisions/               # Architectural Decision Records (ADRs)
+    ├── PROJECT.md               # Current phase and milestones
+    └── design-spec.md           # Operational parameters
 ```
 
 ## Workspace Setup Guide
@@ -63,9 +56,10 @@ This repository contains the permanent, stateful infrastructure that rarely chan
 
 ### 2. platform-services (The Performers)
 A monolith containing all application-specific code and the "glue" required to run it. This allows for rapid feature development and atomic commits across different services.
-* **Domain:** Application logic (auth, api, workers), Shared libraries, and Service-level deployment code.
+* **Domain:** Application logic (ingestion, query, actions), shared libraries, and service-level deployment code.
 * **Security Model:** Open to all product developers. Uses IAM Roles to restrict service-to-service permissions at runtime.
 * **Integration:** Consumes networking and database information from platform-infra via the AWS SSM Parameter Store.
+* **Feature Development:** New features are designed in task documents (`tasks/NNN-feature-name.md`) before implementation. See `tasks/README.md` for the template.
 
 
 
@@ -73,6 +67,13 @@ A monolith containing all application-specific code and the "glue" required to r
 The centralized source of truth for the platform’s evolution and standards.
 * **Domain:** Architectural Decision Records (ADRs), global standards, onboarding guides, and high-level diagrams.
 * **Security Model:** Globally readable across the organization; write access reserved for Lead/Staff engineers.
+
+---
+
+## Documentation Conventions
+
+- **HTML comments** in markdown files communicate constraints to maintainers (including AI assistants like Claude). Example: `<!-- Keep this tree concise: max 3 levels deep -->`. These don't render but persist in the source.
+- **Task documents** (`platform-services/tasks/`) are for feature implementation specs, not documentation constraints.
 
 ---
 
