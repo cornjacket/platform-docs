@@ -8,7 +8,9 @@
 
 ## Current Focus
 
-- [ ] Implement Event Handler (Redpanda consumer → projection update)
+- [ ] Basic logging with structured JSON
+- [ ] Manual end-to-end test (curl → check projection)
+- [ ] Unit tests
 
 ## Milestones
 
@@ -24,7 +26,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Database migrations (outbox, event_store, projections, dlq tables)
 - [x] Ingestion Service: HTTP endpoint → outbox write
 - [x] Outbox Processor: NOTIFY/LISTEN → event store + Redpanda publish
-- [ ] Event Handler: Redpanda consumer → projection update
+- [x] Event Handler: Redpanda consumer → projection update
 - [ ] Basic logging with structured JSON
 - [ ] Manual end-to-end test (curl → check projection)
 - [ ] Unit tests
