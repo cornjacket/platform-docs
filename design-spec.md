@@ -269,6 +269,44 @@ New event types and projections are added as features require them.
 | retry_count | INTEGER | How many retries were attempted |
 | status | STRING | `pending`, `replayed`, `discarded` |
 
+### 6.4 Projections
+
+| Column | Type | Purpose |
+|--------|------|---------|
+| projection_id | UUID | Unique identifier |
+| projection_type | STRING | Type of projection (e.g., `sensor_state`, `user_session`) |
+| aggregate_id | STRING | The aggregate this projection represents |
+| state | JSONB | Current projection state |
+| last_event_id | UUID | Most recent event applied (for idempotency) |
+| last_event_timestamp | TIMESTAMPTZ | Timestamp of last event (for ordering) |
+| updated_at | TIMESTAMPTZ | When projection was last updated |
+
+### 6.5 Indexes
+
+| Table | Index | Columns | Purpose |
+|-------|-------|---------|---------|
+| **outbox** | PRIMARY KEY | `outbox_id` | Unique lookup |
+| | `idx_outbox_created_at` | `created_at` | Fetch oldest entries first |
+| **event_store** | PRIMARY KEY | `event_id` | Unique lookup, idempotency |
+| | `idx_event_store_aggregate` | `aggregate_id` | Query events by aggregate |
+| | `idx_event_store_type` | `event_type` | Query events by type |
+| | `idx_event_store_timestamp` | `timestamp` | Time-range queries |
+| **projections** | PRIMARY KEY | `projection_id` | Unique lookup |
+| | UNIQUE | `(projection_type, aggregate_id)` | One projection per type per aggregate, used by Upsert |
+| | `idx_projections_type` | `projection_type` | List all projections of a type |
+| | `idx_projections_aggregate_id` | `aggregate_id` | Get all projections for an aggregate |
+| **dlq** | PRIMARY KEY | `dlq_id` | Unique lookup |
+| | `idx_dlq_consumer` | `consumer` | Query by consumer |
+| | `idx_dlq_status` | `status` | Query by status (pending, replayed, discarded) |
+| | `idx_dlq_failed_at` | `failed_at` | Time-range queries |
+
+**Index Design Rationale:**
+
+- **Primary lookup patterns** are covered by PRIMARY KEY and UNIQUE constraints
+- **Secondary patterns** (filtering, sorting) have dedicated indexes
+- **Composite indexes** used where queries filter on multiple columns together
+- **No over-indexing** — indexes added based on actual query patterns
+
 ---
 
 ## 7. Action Orchestrator Configuration
