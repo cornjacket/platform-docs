@@ -1,6 +1,6 @@
 # Cornjacket Platform - Project Plan
 
-**Last Updated:** 2026-02-05
+**Last Updated:** 2026-02-06
 
 ## Current Phase
 
@@ -9,7 +9,9 @@
 ## Current Focus
 
 - [x] Basic logging with structured JSON
-- [ ] Manual end-to-end test (curl → check projection)
+- [x] OpenAPI specs for all service endpoints
+- [ ] Query Service: read from projections
+- [ ] Automated end-to-end test
 - [ ] Unit tests
 
 ## Milestones
@@ -28,17 +30,18 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Outbox Processor: NOTIFY/LISTEN → event store + Redpanda publish
 - [x] Event Handler: Redpanda consumer → projection update
 - [x] Basic logging with structured JSON
-- [ ] Manual end-to-end test (curl → check projection)
+- [x] OpenAPI specs for all service endpoints
+- [ ] Query Service: read from projections
+- [ ] Automated end-to-end test
 - [ ] Unit tests
 
-**Skipping:** Query Service, Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
+**Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
 
 ### Phase 2: Local Full Stack
 **Goal:** All services running locally as sidecar pattern, both entry points
 
 - [ ] Add Traefik to docker-compose (HTTP routing)
 - [ ] Add EMQX to docker-compose (MQTT broker)
-- [ ] Query Service: read from projections
 - [ ] Action Orchestrator: webhook delivery
 - [ ] MQTT ingestion path (EMQX → Ingestion Service)
 - [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
@@ -88,6 +91,7 @@ Implementation decisions made during development (not ADR-level).
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | 2026-02-03 | Project plan created | Starting Phase 1 |
+| 2026-02-06 | Move Query Service to Phase 1 | Enables automated e2e testing |
 
 ---
 
