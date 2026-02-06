@@ -10,7 +10,7 @@
 
 - [x] Basic logging with structured JSON
 - [x] OpenAPI specs for all service endpoints
-- [ ] Query Service: read from projections
+- [x] Query Service: read from projections
 - [ ] Automated end-to-end test
 - [ ] Unit tests
 
@@ -31,7 +31,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Event Handler: Redpanda consumer → projection update
 - [x] Basic logging with structured JSON
 - [x] OpenAPI specs for all service endpoints
-- [ ] Query Service: read from projections
+- [x] Query Service: read from projections
 - [ ] Automated end-to-end test
 - [ ] Unit tests
 
