@@ -531,7 +531,23 @@ CJ_[SERVICE]_[VARIABLE_NAME]
 
 **Note:** Port 8082 is reserved for Redpanda Pandaproxy in local development.
 
-### 12.3 Database URLs
+### 12.3 Logging
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CJ_LOG_LEVEL` | `info` | Log verbosity (debug, info, warn, error) |
+| `CJ_LOG_FORMAT` | `json` | Output format (json, text) |
+
+**Per-environment values:**
+
+| Environment | Level | Format | Notes |
+|-------------|-------|--------|-------|
+| Local | `info` or `debug` | `text` | Text format for readability |
+| Dev | `info` | `json` | JSON for CloudWatch |
+| Staging | `info` | `json` | JSON for CloudWatch |
+| Prod | `info` | `json` | JSON for CloudWatch |
+
+### 12.4 Database URLs
 
 | Variable | Default | Service |
 |----------|---------|---------|
@@ -550,13 +566,13 @@ CJ_[SERVICE]_[VARIABLE_NAME]
 | Staging | Separate databases per service (mirrors prod) |
 | Prod | Separate databases per service (ADR-0010) |
 
-### 12.4 Message Bus (Redpanda)
+### 12.5 Message Bus (Redpanda)
 
 | Variable | Default | Local | Dev | Staging | Prod |
 |----------|---------|-------|-----|---------|------|
 | `CJ_REDPANDA_BROKERS` | `localhost:9092` | `localhost:9092` | TBD | TBD | TBD |
 
-### 12.5 Outbox Processor
+### 12.6 Outbox Processor
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -574,7 +590,7 @@ CJ_[SERVICE]_[VARIABLE_NAME]
 | Staging | 4 | 100 | Tune based on load testing |
 | Prod | TBD | TBD | Tune based on throughput requirements |
 
-### 12.6 Event Handler
+### 12.7 Event Handler
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -582,16 +598,18 @@ CJ_[SERVICE]_[VARIABLE_NAME]
 | `CJ_EVENTHANDLER_TOPICS` | `sensor-events,user-actions,system-events` | Comma-separated topic list |
 | `CJ_EVENTHANDLER_POLL_TIMEOUT` | `1s` | Poll timeout duration |
 
-### 12.7 Feature Flags
+### 12.8 Feature Flags
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CJ_FEATURE_TSDB` | `false` | Enable TSDB writer service |
 
-### 12.8 Complete Reference
+### 12.9 Complete Reference
 
 | Variable | Default | Service | Description |
 |----------|---------|---------|-------------|
+| `CJ_LOG_LEVEL` | `info` | All | Log verbosity (debug, info, warn, error) |
+| `CJ_LOG_FORMAT` | `json` | All | Output format (json, text) |
 | `CJ_INGESTION_PORT` | `8080` | Ingestion | HTTP server port |
 | `CJ_QUERY_PORT` | `8081` | Query | HTTP server port |
 | `CJ_ACTIONS_PORT` | `8083` | Actions | HTTP server port |

@@ -8,7 +8,7 @@
 
 ## Current Focus
 
-- [ ] Basic logging with structured JSON
+- [x] Basic logging with structured JSON
 - [ ] Manual end-to-end test (curl → check projection)
 - [ ] Unit tests
 
@@ -27,7 +27,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Ingestion Service: HTTP endpoint → outbox write
 - [x] Outbox Processor: NOTIFY/LISTEN → event store + Redpanda publish
 - [x] Event Handler: Redpanda consumer → projection update
-- [ ] Basic logging with structured JSON
+- [x] Basic logging with structured JSON
 - [ ] Manual end-to-end test (curl → check projection)
 - [ ] Unit tests
 
