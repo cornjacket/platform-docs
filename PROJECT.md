@@ -11,7 +11,7 @@
 - [x] Basic logging with structured JSON
 - [x] OpenAPI specs for all service endpoints
 - [x] Query Service: read from projections
-- [ ] Automated end-to-end test
+- [x] Automated end-to-end test
 - [ ] Unit tests
 
 ## Milestones
@@ -32,7 +32,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Basic logging with structured JSON
 - [x] OpenAPI specs for all service endpoints
 - [x] Query Service: read from projections
-- [ ] Automated end-to-end test
+- [x] Automated end-to-end test
 - [ ] Unit tests
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
