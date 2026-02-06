@@ -660,7 +660,66 @@ The OpenAPI specs are the source of truth for API contracts. See individual spec
 
 ---
 
-## 14. Document History
+## 14. Testing
+
+### 14.1 Test Strategy
+
+| Test Type | Location | Purpose | When to Run |
+|-----------|----------|---------|-------------|
+| Unit tests | `*_test.go` files | Test individual functions/methods | `go test ./...` |
+| E2E tests | `e2e/` directory | Test complete flows through the system | Before releases, after changes |
+
+### 14.2 End-to-End Tests
+
+E2E tests verify the complete event flow:
+```
+HTTP POST → Ingestion → Outbox → Event Store + Redpanda → Event Handler → Projections → Query API
+```
+
+**Directory structure:**
+```
+platform-services/e2e/
+├── main.go           # Test runner entry point
+├── run.sh            # Shell script with environment setup
+├── README.md         # Detailed usage documentation
+├── runner/           # Test registration and execution framework
+├── client/           # HTTP client helpers (reusable)
+└── tests/            # Test implementations
+```
+
+**Usage:**
+```bash
+# Prerequisites: platform must be running
+docker compose up -d
+make migrate-all
+go run ./cmd/platform &
+
+# Run all tests sequentially
+./e2e/run.sh
+
+# Run specific test
+./e2e/run.sh -test=ingest-event
+
+# Run against different environment
+./e2e/run.sh -env=dev
+
+# List available tests
+./e2e/run.sh -list
+```
+
+**Available tests:**
+
+| Test | Description |
+|------|-------------|
+| `ingest-event` | Ingest event, verify projection created |
+| `query-projection` | Query projections, test pagination |
+| `full-flow` | Ingest, update, verify state changes |
+
+**Adding new tests:** See `platform-services/e2e/README.md` for the self-registration pattern.
+
+---
+
+## 15. Document History
 
 | Date | Change |
 |------|--------|

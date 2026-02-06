@@ -95,6 +95,7 @@ The centralized source of truth for the platform’s evolution and standards.
 | [ARCHITECTURE.md](../platform-services/ARCHITECTURE.md) | Code structure, Clean Architecture alignment, dependency rules |
 | [DEVELOPMENT.md](../platform-services/DEVELOPMENT.md) | Build patterns, local dev setup, coding conventions |
 | [tasks/](../platform-services/tasks/) | Feature implementation task documents |
+| [e2e/README.md](../platform-services/e2e/README.md) | End-to-end test framework and usage |
 
 ### platform-infra
 
