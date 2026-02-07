@@ -13,7 +13,7 @@
 - [x] Query Service: read from projections
 - [x] Automated end-to-end test
 - [x] Service client libraries (restructure for component testing)
-- [ ] Unit tests
+- [ ] Unit/Integration tests
 
 ## Milestones
 
@@ -35,7 +35,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Query Service: read from projections
 - [x] Automated end-to-end test
 - [x] Service client libraries (restructure for component testing)
-- [ ] Unit tests
+- [ ] Unit/Integration tests
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
 

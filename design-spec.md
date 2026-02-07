@@ -695,10 +695,51 @@ The OpenAPI specs are the source of truth for API contracts. See individual spec
 
 | Test Type | Location | Purpose | When to Run |
 |-----------|----------|---------|-------------|
-| Unit tests | `*_test.go` files | Test individual functions/methods | `go test ./...` |
+| Unit tests | `*_test.go` files | Test individual functions/methods in isolation | `go test ./...` |
+| Integration tests | `*_test.go` files | Test components with real dependencies (Postgres, Redpanda) | `go test -tags=integration ./...` |
 | E2E tests | `e2e/` directory | Test complete flows through the system | Before releases, after changes |
 
-### 14.2 End-to-End Tests
+### 14.2 Unit/Integration Tests
+
+Unit tests verify individual functions without external dependencies. Integration tests verify components with real infrastructure (requires `docker compose up`).
+
+**Testable Packages (no mocking required):**
+
+| Package | What to Test | Test Type |
+|---------|--------------|-----------|
+| `shared/config` | `Load()` with various env vars | Unit |
+| `shared/domain/events` | `NewEnvelope()`, `ParsePayload()` | Unit |
+| `client/eventhandler` | `SubmitEvent()` topic routing logic | Unit (mock `EventPublisher`) |
+
+**Testable Packages (integration, requires infrastructure):**
+
+| Package | What to Test | Dependencies |
+|---------|--------------|--------------|
+| `shared/projections` | `WriteProjection()`, `GetProjection()`, `ListProjections()` | Postgres |
+| `shared/infra/postgres` | `OutboxRepo`, `EventStoreRepo`, connection pool | Postgres |
+| `shared/infra/redpanda` | `Publish()`, partition key routing | Redpanda |
+
+**Service Component Tests (mock interfaces):**
+
+| Service | Mock Interface | Test Scenarios |
+|---------|----------------|----------------|
+| Ingestion Worker | `EventSubmitter` | Outbox processing calls `SubmitEvent()` correctly |
+| EventHandler | `projections.Store` | Event handlers call `WriteProjection()` with correct state |
+| Query Service | `ProjectionReader` | `GetProjection()`/`ListProjections()` return expected data |
+
+**Running tests:**
+```bash
+# Unit tests only (no infrastructure needed)
+go test ./internal/shared/domain/... ./internal/shared/config/...
+
+# Integration tests (requires docker compose up)
+go test -tags=integration ./internal/shared/infra/... ./internal/shared/projections/...
+
+# All tests
+go test ./...
+```
+
+### 14.3 End-to-End Tests
 
 E2E tests verify the complete event flow:
 ```
@@ -752,5 +793,6 @@ go run ./cmd/platform &
 
 | Date | Change |
 |------|--------|
+| 2026-02-07 | Add Unit/Integration Tests section (14.2) |
 | 2026-02-05 | Add Environment Variables section (12) |
 | 2026-01-29 | Initial creation from ADR refactoring |
