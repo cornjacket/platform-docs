@@ -1,6 +1,6 @@
 # Cornjacket Platform Design Specification
 
-**Last Updated:** 2026-02-04
+**Last Updated:** 2026-02-06
 **Status:** Living Document
 
 This document contains operational details, configuration parameters, and implementation specifics that may change over time. For architectural decisions and rationale, see the ADRs in `decisions/`.
@@ -98,7 +98,7 @@ Each service receives its own database URL as configuration (see ADR-0010).
 
 | Environment Variable | Service | Tables Owned |
 |---------------------|---------|--------------|
-| `INGESTION_DATABASE_URL` | Ingestion + Outbox Processor | outbox, event_store |
+| `INGESTION_DATABASE_URL` | Ingestion (incl. Worker) | outbox, event_store |
 | `EVENTHANDLER_DATABASE_URL` | Event Handler | projections, dlq |
 | `QUERY_DATABASE_URL` | Query Service | (none - reads from Event Handler) |
 | `TSDB_DATABASE_URL` | TSDB Writer | timeseries tables, dlq |
@@ -115,46 +115,75 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 ## 3. Data Flow
 
-### 3.1 Overview
+### 3.1 Service-Level View
+
+Three services handle the event flow:
+
+```
+┌─────────────┐         ┌──────────────┐         ┌─────────────┐
+│  Ingestion  │────────▶│ EventHandler │────────▶│    Query    │
+│   Service   │  events │   Service    │  state  │   Service   │
+└─────────────┘         └──────────────┘         └─────────────┘
+       ▲                                                │
+       │                                                ▼
+    HTTP POST                                       HTTP GET
+   /api/v1/events                              /api/v1/projections
+```
+
+| Service | Responsibility | Port |
+|---------|----------------|------|
+| **Ingestion** | Accept events, validate, ensure delivery | 8080 |
+| **EventHandler** | Process events, update projections | (background) |
+| **Query** | Read projection state | 8081 |
+
+### 3.2 Implementation Details
+
+The infrastructure details are hidden within each service:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              WRITE PATH                                      │
+│                              INGESTION SERVICE                               │
 │                                                                              │
-│   HTTP ──▶ Ingestion ──▶ Outbox ──▶ Outbox Processor ──┬──▶ Event Store     │
-│   (MQTT)     Service      Table                        │                     │
-│                                                        └──▶ Redpanda        │
-│                                                              │               │
-└──────────────────────────────────────────────────────────────┼───────────────┘
-                                                               │
-┌──────────────────────────────────────────────────────────────┼───────────────┐
-│                              READ PATH                       ▼               │
+│   HTTP ──▶ Validation ──▶ Outbox ──▶ Worker ──┬──▶ Event Store (audit)     │
+│   (MQTT)                   Table              │                              │
+│                                               └──▶ EventHandler Client       │
+│                                                    (Redpanda publish)        │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                                           │
+┌──────────────────────────────────────────────────────────┼───────────────────┐
+│                           EVENTHANDLER SERVICE           ▼                   │
 │                                                                              │
-│   Query ◀── Projections ◀── Event Handler ◀── Redpanda                      │
-│   Service      Table                            (consumer)                   │
+│   Redpanda Consumer ──▶ Handler Registry ──▶ Projections Store              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+                                                           │
+┌──────────────────────────────────────────────────────────┼───────────────────┐
+│                              QUERY SERVICE               ▼                   │
+│                                                                              │
+│   HTTP ──▶ Validation ──▶ Projections Store ──▶ Response                    │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Write Path
+### 3.3 Write Path
 
 1. **Entry:** HTTP request (or MQTT in Phase 2) arrives at Ingestion Service
 2. **Validate:** Ingestion Service validates the event envelope
 3. **Persist:** Event written to `outbox` table (durable, transactional)
-4. **Process:** Outbox Processor picks up entry (NOTIFY/LISTEN + watchdog)
+4. **Process:** Ingestion Worker picks up entry (NOTIFY/LISTEN + watchdog)
 5. **Fan-out:**
-   - Write to `event_store` table (append-only log)
-   - Publish to Redpanda topic (based on event_type prefix)
+   - Write to `event_store` table (append-only audit log)
+   - Submit to EventHandler via client (publishes to Redpanda)
 6. **Complete:** Delete from `outbox` table
 
-### 3.3 Read Path
+### 3.4 Read Path
 
-1. **Consume:** Event Handler subscribes to Redpanda topics
+1. **Consume:** EventHandler subscribes to Redpanda topics
 2. **Dispatch:** Route event to handler based on event_type
-3. **Project:** Update projection in `projections` table
+3. **Project:** Update projection via shared projections store
 4. **Commit:** Commit consumer offset (at-least-once delivery)
 
-### 3.4 Query Path
+### 3.5 Query Path
 
 1. **Request:** Query Service receives HTTP request
 2. **Read:** Fetch from `projections` table (pre-computed state)
