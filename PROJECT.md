@@ -28,7 +28,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] docker-compose.yml with Postgres + Redpanda
 - [x] Database migrations (outbox, event_store, projections, dlq tables)
 - [x] Ingestion Service: HTTP endpoint → outbox write
-- [x] Outbox Processor: NOTIFY/LISTEN → event store + Redpanda publish
+- [x] Ingestion Worker: NOTIFY/LISTEN → event store + Redpanda publish
 - [x] Event Handler: Redpanda consumer → projection update
 - [x] Basic logging with structured JSON
 - [x] OpenAPI specs for all service endpoints

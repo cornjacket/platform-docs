@@ -5,7 +5,7 @@
 
 ## Context
 
-The platform uses an outbox pattern (ADR-0002) where events are written to an outbox table and asynchronously processed. We need to decide how the Outbox Processor reads and processes these entries.
+The platform uses an outbox pattern (ADR-0002) where events are written to an outbox table and asynchronously processed. We need to decide how the Ingestion Worker (the outbox processor, implemented as `ingestion/worker/`) reads and processes these entries.
 
 Key considerations:
 - **Current deployment:** Single-instance monolith (dev environment)
@@ -17,11 +17,11 @@ Key considerations:
 
 ### Phase 1: Dispatcher + Worker Pool (Option B)
 
-Implement a dispatcher pattern with configurable worker pool:
+Implement a dispatcher pattern with configurable worker pool. The processor is implemented as `ingestion/worker/` — an internal component of the Ingestion Service.
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  Outbox Processor                   │
+│              Ingestion Worker (ingestion/worker/)   │
 │                                                     │
 │  ┌────────────┐         ┌─────────────────────┐    │
 │  │ Dispatcher │────────▶│   Work Channel      │    │
@@ -97,7 +97,7 @@ SQS provides:
 2. **Phase 2 (if needed):** Add `FOR UPDATE SKIP LOCKED` for multi-instance
 3. **Phase 3 (if needed):** Evaluate SQS migration based on scale requirements
 
-The current design isolates outbox reading behind the `OutboxReader` interface, making future changes possible without touching processor logic.
+The current design isolates outbox reading behind the `OutboxReader` interface and event submission behind `EventSubmitter`, making future changes possible without touching processor logic. The Ingestion Worker uses client libraries (`client/eventhandler`) for inter-service communication, enabling component testing.
 
 ## Consequences
 

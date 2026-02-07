@@ -40,9 +40,9 @@ Each service owns its tables and migrations:
 
 | Service | Tables | Responsibility |
 |---------|--------|----------------|
-| **Ingestion** | outbox, event_store | Write path (Ingestion + Outbox Processor) |
+| **Ingestion** | outbox, event_store | Write path (Ingestion + Ingestion Worker) |
 | **Event Handler** | projections, dlq | CQRS read-side projections, consumer DLQ |
-| **Query** | (none) | Reads from Event Handler's projections |
+| **Query** | (none) | Reads from Event Handler's projections via `shared/projections` |
 | **TSDB Writer** | timeseries tables, dlq | Time-series data, consumer DLQ |
 | **Actions** | action_config, dlq | Webhook configuration, consumer DLQ |
 

@@ -193,11 +193,11 @@ The infrastructure details are hidden within each service:
 
 ## 4. Event Types
 
-Events flow through the system via the Outbox Processor → Redpanda → Event Handler pipeline. The `event_type` field determines topic routing and projection handling.
+Events flow through the system via the Ingestion Worker → Redpanda → Event Handler pipeline. The `event_type` field determines topic routing and projection handling.
 
 ### 4.1 Topic Routing
 
-The Outbox Processor routes events to topics based on `event_type` prefix:
+The Ingestion Worker routes events to topics based on `event_type` prefix:
 
 | Prefix | Topic | Description |
 |--------|-------|-------------|
@@ -580,7 +580,7 @@ CJ_[SERVICE]_[VARIABLE_NAME]
 
 | Variable | Default | Service |
 |----------|---------|---------|
-| `CJ_INGESTION_DATABASE_URL` | `postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable` | Ingestion + Outbox Processor |
+| `CJ_INGESTION_DATABASE_URL` | `postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable` | Ingestion + Ingestion Worker |
 | `CJ_EVENTHANDLER_DATABASE_URL` | `postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable` | Event Handler |
 | `CJ_QUERY_DATABASE_URL` | `postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable` | Query Service |
 | `CJ_TSDB_DATABASE_URL` | `postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable` | TSDB Writer |
@@ -601,7 +601,7 @@ CJ_[SERVICE]_[VARIABLE_NAME]
 |----------|---------|-------|-----|---------|------|
 | `CJ_REDPANDA_BROKERS` | `localhost:9092` | `localhost:9092` | TBD | TBD | TBD |
 
-### 12.6 Outbox Processor
+### 12.6 Ingestion Worker
 
 | Variable | Default | Description |
 |----------|---------|-------------|

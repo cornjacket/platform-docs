@@ -157,5 +157,5 @@ For CQRS projections, per-aggregate ordering is sufficient. Events for the same 
 
 ## Related ADRs
 
-- [ADR-0012](0012-outbox-processing-strategy.md) — Similar scaling strategy for Outbox Processor
+- [ADR-0012](0012-outbox-processing-strategy.md) — Similar scaling strategy for Ingestion Worker
 - [ADR-0003](0003-cqrs-with-eventual-consistency.md) — CQRS pattern that Event Handler implements
