@@ -13,6 +13,7 @@
 - [x] Query Service: read from projections
 - [x] Automated end-to-end test
 - [x] Service client libraries (restructure for component testing)
+- [ ] Time handling strategy (device time vs ingestion time, testability)
 - [ ] Unit/Integration tests
 
 ## Milestones
@@ -35,6 +36,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Query Service: read from projections
 - [x] Automated end-to-end test
 - [x] Service client libraries (restructure for component testing)
+- [ ] Time handling strategy (device time vs ingestion time, testability)
 - [ ] Unit/Integration tests
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
@@ -49,7 +51,6 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
 - [ ] E2E local test: HTTP + MQTT → projections → query
 - [ ] Component tests with real client libraries
-- [ ] Brainstorm: timestamp handling (device time vs `time.Now()`, event time vs ingestion time)
 
 **Skipping:** AWS, CI/CD, AI Service
 
