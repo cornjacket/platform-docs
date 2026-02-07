@@ -49,6 +49,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
 - [ ] E2E local test: HTTP + MQTT → projections → query
 - [ ] Component tests with real client libraries
+- [ ] Brainstorm: timestamp handling (device time vs `time.Now()`, event time vs ingestion time)
 
 **Skipping:** AWS, CI/CD, AI Service
 
