@@ -1,6 +1,6 @@
 # Cornjacket Platform - Project Plan
 
-**Last Updated:** 2026-02-06
+**Last Updated:** 2026-02-07
 
 ## Current Phase
 
@@ -12,7 +12,7 @@
 - [x] OpenAPI specs for all service endpoints
 - [x] Query Service: read from projections
 - [x] Automated end-to-end test
-- [ ] Service client libraries (restructure for component testing)
+- [x] Service client libraries (restructure for component testing)
 - [ ] Unit tests
 
 ## Milestones
@@ -34,7 +34,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] OpenAPI specs for all service endpoints
 - [x] Query Service: read from projections
 - [x] Automated end-to-end test
-- [ ] Service client libraries (restructure for component testing)
+- [x] Service client libraries (restructure for component testing)
 - [ ] Unit tests
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
