@@ -12,6 +12,7 @@
 - [x] OpenAPI specs for all service endpoints
 - [x] Query Service: read from projections
 - [x] Automated end-to-end test
+- [ ] Service client libraries (restructure for component testing)
 - [ ] Unit tests
 
 ## Milestones
@@ -33,6 +34,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] OpenAPI specs for all service endpoints
 - [x] Query Service: read from projections
 - [x] Automated end-to-end test
+- [ ] Service client libraries (restructure for component testing)
 - [ ] Unit tests
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
@@ -92,6 +94,7 @@ Implementation decisions made during development (not ADR-level).
 |------|----------|-----------|
 | 2026-02-03 | Project plan created | Starting Phase 1 |
 | 2026-02-06 | Move Query Service to Phase 1 | Enables automated e2e testing |
+| 2026-02-06 | Add service client libraries before unit tests | Enables component testing with mocks |
 
 ---
 
