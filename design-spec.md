@@ -659,7 +659,50 @@ CJ_[SERVICE]_[VARIABLE_NAME]
 
 ---
 
-## 13. API Reference
+## 13. Time Handling
+
+The platform uses a `clock` package for time abstraction, enabling testability and replay.
+
+### 13.1 Dual Timestamps
+
+Events carry two timestamps with distinct purposes:
+
+| Field | Set By | Purpose |
+|-------|--------|---------|
+| `event_time` | Caller | When the event occurred (business time) |
+| `ingested_at` | Platform | When the platform received it (audit time) |
+
+**API behavior:** The `event_time` field is optional. If omitted, defaults to current time.
+
+### 13.2 Clock Implementations
+
+| Clock | Usage | Behavior |
+|-------|-------|----------|
+| `RealClock` | Production | Returns `time.Now().UTC()` |
+| `FixedClock` | Unit tests | Returns a predetermined time |
+| `ReplayClock` | Event replay | Advances with historical events |
+
+### 13.3 Usage
+
+```go
+// Production (default) — uses real time
+timestamp := clock.Now()
+
+// Unit tests — inject fixed time
+clock.Set(clock.FixedClock{Time: fixedTime})
+t.Cleanup(clock.Reset)
+
+// Replay — advance per event
+replayClock := &clock.ReplayClock{}
+clock.Set(replayClock)
+replayClock.Advance(event.IngestedAt)
+```
+
+See [ADR-0015](decisions/0015-time-handling-strategy.md) for rationale.
+
+---
+
+## 14. API Reference
 
 API endpoints are defined using OpenAPI 3.0 specifications in `platform-services/api/openapi/`.
 
@@ -689,9 +732,9 @@ The OpenAPI specs are the source of truth for API contracts. See individual spec
 
 ---
 
-## 14. Testing
+## 15. Testing
 
-### 14.1 Test Strategy
+### 15.1 Test Strategy
 
 | Test Type | Location | Purpose | When to Run |
 |-----------|----------|---------|-------------|
@@ -699,7 +742,7 @@ The OpenAPI specs are the source of truth for API contracts. See individual spec
 | Integration tests | `*_test.go` files | Test components with real dependencies (Postgres, Redpanda) | `go test -tags=integration ./...` |
 | E2E tests | `e2e/` directory | Test complete flows through the system | Before releases, after changes |
 
-### 14.2 Unit/Integration Tests
+### 15.2 Unit/Integration Tests
 
 Unit tests verify individual functions without external dependencies. Integration tests verify components with real infrastructure (requires `docker compose up`).
 
@@ -739,7 +782,7 @@ go test -tags=integration ./internal/shared/infra/... ./internal/shared/projecti
 go test ./...
 ```
 
-### 14.3 End-to-End Tests
+### 15.3 End-to-End Tests
 
 E2E tests verify the complete event flow:
 ```
@@ -789,10 +832,11 @@ go run ./cmd/platform &
 
 ---
 
-## 15. Document History
+## 16. Document History
 
 | Date | Change |
 |------|--------|
-| 2026-02-07 | Add Unit/Integration Tests section (14.2) |
+| 2026-02-07 | Add Time Handling section (13) |
+| 2026-02-07 | Add Unit/Integration Tests section (15.2) |
 | 2026-02-05 | Add Environment Variables section (12) |
 | 2026-01-29 | Initial creation from ADR refactoring |
