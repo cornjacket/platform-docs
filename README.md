@@ -20,6 +20,7 @@ cornjacket-platform/             # Wrapper folder (not a Git repo)
 │
 └── platform-docs/               # [Git Repo] Global documentation
     ├── decisions/               # Architectural Decision Records (ADRs)
+    ├── insights/                # Patterns and learnings discovered during development
     ├── PROJECT.md               # Current phase and milestones
     └── design-spec.md           # Operational parameters
 ```
@@ -74,6 +75,7 @@ The centralized source of truth for the platform’s evolution and standards.
 
 - **HTML comments** in markdown files communicate constraints to maintainers (including AI assistants like Claude). Example: `<!-- Keep this tree concise: max 3 levels deep -->`. These don't render but persist in the source.
 - **Task documents** (`platform-services/tasks/`) are for feature implementation specs, not documentation constraints.
+- **Insights** (`platform-docs/insights/`) capture patterns and learnings discovered during development. Unlike ADRs (which document decisions), insights document wisdom gained. Create an insight when you discover a pattern worth remembering.
 
 ---
 
@@ -85,7 +87,8 @@ The centralized source of truth for the platform’s evolution and standards.
 |----------|---------|
 | [PROJECT.md](PROJECT.md) | Current phase, progress, and tagging policy |
 | [design-spec.md](design-spec.md) | System design: data flow, event types, schemas, configuration |
-| [decisions/](decisions/) | Architectural Decision Records (ADRs) |
+| [decisions/](decisions/) | Architectural Decision Records (ADRs) — "why we decided X" |
+| [insights/](insights/) | Patterns and learnings — "what we discovered" |
 | [CLAUDE.md](CLAUDE.md) | Instructions for Claude Code AI assistant |
 
 ### platform-services
