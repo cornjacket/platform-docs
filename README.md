@@ -4,26 +4,70 @@ This workspace organizes the platform into domain-specific repositories to enfor
 
 ## Global Directory Structure
 
-<!-- Keep this tree concise: max 3 levels deep from cornjacket-platform/ -->
+<!-- Keep this tree concise: max 5 levels deep from cornjacket-platform/ -->
 ```text
-cornjacket-platform/             # Wrapper folder (not a Git repo)
+cornjacket-platform/                      # Wrapper folder (not a Git repo)
 │
-├── platform-infra/              # [Git Repo] Infrastructure foundation
-│   └── ...                      # Terraform modules for VPC, networking, data
+├── platform-infra/                       # [Git Repo] Foundational infrastructure (Terraform)
+│   ├── platform-infra-networking/        # Manages VPC, subnets, etc.
+│   │   ├── dev/                          # dev environment-specific config
+│   │   │   └── main.tf
+│   │   └── modules/                      # Reusable Terraform modules
+│   │       └── platform-vpc/
 │
-├── platform-services/           # [Git Repo] Application monolith
-│   ├── cmd/platform/            # Single binary entry point
-│   ├── internal/shared/         # Shared config, domain, infrastructure
-│   ├── internal/services/       # Individual services (ingestion, query, etc.)
-│   ├── tasks/                   # Feature task documents
-│   └── deploy/                  # Service deployment Terraform
+├── platform-services/                    # [Git Repo] Application monolith (Go)
+│   ├── internal/                         # All application code
+│   │   ├── services/                     # Business logic for each service
+│   │   │   ├── ingestion/                # Handles incoming events
+│   │   │   │   ├── handler.go            # HTTP driving adapter
+│   │   │   │   └── service.go            # Application use cases
+│   │   │   ├── eventhandler/             # Processes events into projections
+│   │   │   │   ├── consumer.go           # Redpanda consumer
+│   │   │   │   └── handlers.go           # Event-specific logic
+│   │   │   ├── query/                    # Serves read-only projections
+│   │   │   │   └── handler.go
+│   │   │   ├── actions/                  # (Future) Orchestrates actions
+│   │   │   └── tsdb/                     # (Future) Handles time-series data
+│   │   └── shared/                       # Code shared between services
+│   │       ├── domain/                   # Core entities (events, clock)
+│   │       │   └── events/
+│   │       └── infra/                    # Infra clients (Postgres, Redpanda)
+│   │           └── postgres/
+│   └── e2e/                              # End-to-end test suite
+│       ├── tests/
+│       │   └── full_flow.go
 │
-└── platform-docs/               # [Git Repo] Global documentation
-    ├── decisions/               # Architectural Decision Records (ADRs)
-    ├── insights/                # Patterns and learnings discovered during development
-    ├── PROJECT.md               # Current phase and milestones
-    └── design-spec.md           # Operational parameters
+└── platform-docs/                        # [Git Repo] Global documentation
+    ├── decisions/                        # Architectural Decision Records (ADRs)
+    │   └── 0001-event-driven-cqrs-architecture.md
+    ├── insights/                         # Architectural patterns and learnings
+    │   ├── architecture/
+    │   │   └── 001-time-separation-of-concerns.md
+    │   └── development/
 ```
+
+## Key Architectural Principles
+
+This section provides a high-level summary of the core architectural patterns that govern the platform. For a detailed breakdown, see the [design-spec.md](design-spec.md).
+
+### Event-Driven Data Flow (CQRS)
+
+The platform uses a CQRS (Command Query Responsibility Segregation) pattern. The flow is one-way and decoupled, allowing for high reliability and scalability.
+
+1.  **Ingestion (Write Path)**: The **Ingestion Service** receives an event, immediately saves it to a durable `outbox` table in PostgreSQL, and then publishes it to a **Redpanda** (Kafka) message bus. This ensures no data is lost.
+2.  **Processing**: The **EventHandler Service** consumes events from Redpanda and uses them to build "projections"—read-optimized views of the data (e.g., `latest_sensor_state`).
+3.  **Querying (Read Path)**: The **Query Service** serves fast reads to clients by querying the pre-computed projections directly.
+
+### Time as a Dependency
+
+To ensure tests are reliable and data is accurate, the platform treats time as an abstracted dependency.
+
+-   **`clock` Package**: All code must call `clock.Now()` instead of `time.Now()`. This allows tests to inject a `FixedClock` for deterministic results.
+-   **Dual Timestamps**: Events have two timestamps:
+    -   `EventTime`: When the event occurred (business time), set by the client.
+    -   `IngestedAt`: When the platform received it (audit time), set by the server.
+
+This design is detailed in [ADR-0015](decisions/0015-time-handling-strategy.md) and the [Clock as Dependency Injection insight](insights/architecture/002-clock-as-dependency-injection.md).
 
 ## Workspace Setup Guide
 
@@ -42,9 +86,9 @@ To maintain security and separation of concerns, this project is split into mult
 
 ### The Wrapper Concept
 The `cornjacket-platform/` directory is **not** a Git repository. It is a logical container that allows you to:
-- **Cross-Reference:** Easily move between infrastructure and application code.
-- **Local Simulation:** Use `docker-compose` at the service level to reference the entire platform.
-- **Security:** Ensure that permissions are managed at the individual repository level, not the folder level.
+-   **Cross-Reference:** Easily move between infrastructure and application code.
+-   **Local Simulation:** Use `docker-compose` at the service level to reference the entire platform.
+-   **Security:** Ensure that permissions are managed at the individual repository level, not the folder level.
 
 
 ## Repository Strategy
@@ -112,3 +156,4 @@ The centralized source of truth for the platform’s evolution and standards.
 To maintain the separation of concerns, the repositories do not share code. Instead, they communicate through **AWS SSM Parameter Store**.
 1. **Infra** publishes resource IDs (like vpc-id or db-endpoint).
 2. **Services** retrieve these IDs during the deployment phase to "handshake" with the environment.
+

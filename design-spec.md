@@ -782,6 +782,20 @@ go test -tags=integration ./internal/shared/infra/... ./internal/shared/projecti
 go test ./...
 ```
 
+**Test coverage:**
+```bash
+# Generate coverage report
+go test -coverprofile=coverage.out ./internal/...
+
+# View coverage summary
+go tool cover -func=coverage.out
+
+# View line-by-line in browser
+go tool cover -html=coverage.out
+```
+
+Note: Coverage reports (`coverage.out`, `coverage.html`) are **not checked in**. They are ephemeral status metrics generated on demand or tracked by CI. See [Insight: Static vs Dynamic Documentation](insights/development/003-static-vs-dynamic-documentation.md).
+
 ### 15.3 End-to-End Tests
 
 E2E tests verify the complete event flow:

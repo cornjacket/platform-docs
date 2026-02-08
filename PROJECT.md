@@ -59,6 +59,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 
 - [ ] GitHub Actions: lint, format (golangci-lint, gofmt)
 - [ ] GitHub Actions: unit tests, component tests
+- [ ] GitHub Actions: test coverage reports (track %, fail on regression)
 - [ ] GitHub Actions: Docker build (no push yet)
 - [ ] GitHub Actions: Terraform validate/plan for platform-infra
 - [ ] Security scanning (gosec or similar)
