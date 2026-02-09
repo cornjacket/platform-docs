@@ -46,3 +46,4 @@ Each insight file follows this structure:
 | [Time Separation of Concerns](architecture/001-time-separation-of-concerns.md) | Architecture | EventTime (caller) vs IngestedAt (platform) — clear ownership |
 | [Clock as Dependency Injection](architecture/002-clock-as-dependency-injection.md) | Architecture | Time is an input, not a side effect — enables testing and replay |
 | [Static vs Dynamic Documentation](development/003-static-vs-dynamic-documentation.md) | Development | Document the strategy, not the status — coverage commands yes, coverage files no |
+| [Centralize Insights in Shared Docs Repo](development/004-centralize-insights-in-shared-docs-repo.md) | Development | Use platform-docs as single source of truth for all insights across repos |
