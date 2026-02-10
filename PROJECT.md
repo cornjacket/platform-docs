@@ -17,6 +17,7 @@
 - [x] Unit tests
 - [ ] Integration tests (real Postgres/Redpanda via docker-compose)
 - [ ] Top-level service wrappers (main.go entry points for each platform service)
+- [ ] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
 ## Milestones
 
@@ -42,6 +43,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Unit tests
 - [ ] Integration tests (real Postgres/Redpanda via docker-compose)
 - [ ] Top-level service wrappers (main.go entry points for each platform service)
+- [ ] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
 
@@ -55,6 +57,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
 - [ ] E2E local test: HTTP + MQTT → projections → query
 - [ ] Component tests with real client libraries
+- [ ] Tag `phase-2-local-full-stack` on platform-services, platform-docs, platform-infra
 
 **Skipping:** AWS, CI/CD, AI Service
 
@@ -68,6 +71,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] GitHub Actions: Terraform validate/plan for platform-infra
 - [ ] Security scanning (gosec or similar)
 - [ ] Migrate integration tests from docker-compose to testcontainers (self-contained CI)
+- [ ] Tag `phase-3-ci-foundation` on platform-services, platform-docs, platform-infra
 
 **Skipping:** ECR push, AWS deployment
 
@@ -81,6 +85,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] GitHub Actions: build → push to ECR → terraform apply
 - [ ] E2E smoke test against deployed environment
 - [ ] Verify all access patterns (HTTP, MQTT, dashboards)
+- [ ] Tag `phase-4-aws-dev` on platform-services, platform-docs, platform-infra
 
 ### Phase 5: Polish
 **Goal:** Production-ready features
@@ -91,6 +96,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] DLQ implementation
 - [ ] Observability: structured logging, CloudWatch metrics
 - [ ] Error handling per ADR-0004
+- [ ] Tag `phase-5-polish` on platform-services, platform-docs, platform-infra
 
 ---
 
