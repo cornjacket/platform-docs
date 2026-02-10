@@ -14,7 +14,9 @@
 - [x] Automated end-to-end test
 - [x] Service client libraries (restructure for component testing)
 - [x] Time handling strategy (device time vs ingestion time, testability)
-- [ ] Unit/Integration tests
+- [x] Unit tests
+- [ ] Integration tests (real Postgres/Redpanda via testcontainers)
+- [ ] Top-level service wrappers (main.go entry points for each platform service)
 
 ## Milestones
 
@@ -37,7 +39,9 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Automated end-to-end test
 - [x] Service client libraries (restructure for component testing)
 - [x] Time handling strategy (device time vs ingestion time, testability)
-- [ ] Unit/Integration tests
+- [x] Unit tests
+- [ ] Integration tests (real Postgres/Redpanda via testcontainers)
+- [ ] Top-level service wrappers (main.go entry points for each platform service)
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
 
