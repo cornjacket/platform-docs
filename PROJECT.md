@@ -16,7 +16,7 @@
 - [x] Time handling strategy (device time vs ingestion time, testability)
 - [x] Unit tests
 - [x] Integration tests (real Postgres/Redpanda via docker-compose)
-- [ ] Top-level service wrappers (main.go entry points for each platform service)
+- [x] Top-level service wrappers (main.go entry points for each platform service)
 - [ ] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
 ## Milestones
@@ -42,7 +42,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Time handling strategy (device time vs ingestion time, testability)
 - [x] Unit tests
 - [x] Integration tests (real Postgres/Redpanda via docker-compose)
-- [ ] Top-level service wrappers (main.go entry points for each platform service)
+- [x] Top-level service wrappers (main.go entry points for each platform service)
 - [ ] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
