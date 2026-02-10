@@ -57,6 +57,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
 - [ ] E2E local test: HTTP + MQTT → projections → query
 - [ ] Component tests with real client libraries
+- [ ] Evaluate whether pull requests are needed for this project
 - [ ] Tag `phase-2-local-full-stack` on platform-services, platform-docs, platform-infra
 
 **Skipping:** AWS, CI/CD, AI Service

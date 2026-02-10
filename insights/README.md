@@ -48,3 +48,4 @@ Each insight file follows this structure:
 | [Static vs Dynamic Documentation](development/003-static-vs-dynamic-documentation.md) | Development | Document the strategy, not the status — coverage commands yes, coverage files no |
 | [Centralize Insights in Shared Docs Repo](development/004-centralize-insights-in-shared-docs-repo.md) | Development | Use platform-docs as single source of truth for all insights across repos |
 | [Event Schema as API Contract](architecture/003-event-schema-as-api-contract.md) | Architecture | The Go struct IS the contract — formalize only when ambiguity emerges |
+| [Phased Development with Milestone Tags](development/005-phased-development-with-milestone-tags.md) | Development | Break major work into formal phases; last checklist item is always the multi-repo milestone tag |
