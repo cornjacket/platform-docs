@@ -15,7 +15,7 @@
 - [x] Service client libraries (restructure for component testing)
 - [x] Time handling strategy (device time vs ingestion time, testability)
 - [x] Unit tests
-- [ ] Integration tests (real Postgres/Redpanda via docker-compose)
+- [x] Integration tests (real Postgres/Redpanda via docker-compose)
 - [ ] Top-level service wrappers (main.go entry points for each platform service)
 - [ ] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
@@ -41,7 +41,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Service client libraries (restructure for component testing)
 - [x] Time handling strategy (device time vs ingestion time, testability)
 - [x] Unit tests
-- [ ] Integration tests (real Postgres/Redpanda via docker-compose)
+- [x] Integration tests (real Postgres/Redpanda via docker-compose)
 - [ ] Top-level service wrappers (main.go entry points for each platform service)
 - [ ] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
