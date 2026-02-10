@@ -18,6 +18,7 @@
 - [x] Integration tests (real Postgres/Redpanda via docker-compose)
 - [x] Top-level service wrappers (main.go entry points for each platform service)
 - [ ] Component tests (real Postgres/Redpanda via docker-compose)
+- [ ] Review integration test polling pattern vs channel-based mock pattern
 - [ ] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
 ## Milestones
@@ -45,6 +46,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Integration tests (real Postgres/Redpanda via docker-compose)
 - [x] Top-level service wrappers (main.go entry points for each platform service)
 - [ ] Component tests (real Postgres/Redpanda via docker-compose)
+- [ ] Review integration test polling pattern vs channel-based mock pattern
 - [ ] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
