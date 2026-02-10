@@ -1,6 +1,6 @@
 # Cornjacket Platform - Project Plan
 
-**Last Updated:** 2026-02-07
+**Last Updated:** 2026-02-10
 
 ## Current Phase
 
@@ -15,7 +15,7 @@
 - [x] Service client libraries (restructure for component testing)
 - [x] Time handling strategy (device time vs ingestion time, testability)
 - [x] Unit tests
-- [ ] Integration tests (real Postgres/Redpanda via testcontainers)
+- [ ] Integration tests (real Postgres/Redpanda via docker-compose)
 - [ ] Top-level service wrappers (main.go entry points for each platform service)
 
 ## Milestones
@@ -40,7 +40,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [x] Service client libraries (restructure for component testing)
 - [x] Time handling strategy (device time vs ingestion time, testability)
 - [x] Unit tests
-- [ ] Integration tests (real Postgres/Redpanda via testcontainers)
+- [ ] Integration tests (real Postgres/Redpanda via docker-compose)
 - [ ] Top-level service wrappers (main.go entry points for each platform service)
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
@@ -67,6 +67,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 - [ ] GitHub Actions: Docker build (no push yet)
 - [ ] GitHub Actions: Terraform validate/plan for platform-infra
 - [ ] Security scanning (gosec or similar)
+- [ ] Migrate integration tests from docker-compose to testcontainers (self-contained CI)
 
 **Skipping:** ECR push, AWS deployment
 
@@ -102,6 +103,7 @@ Implementation decisions made during development (not ADR-level).
 | 2026-02-03 | Project plan created | Starting Phase 1 |
 | 2026-02-06 | Move Query Service to Phase 1 | Enables automated e2e testing |
 | 2026-02-06 | Add service client libraries before unit tests | Enables component testing with mocks |
+| 2026-02-10 | Integration tests use docker-compose (Phase 1), defer testcontainers to Phase 3 | docker-compose already exists; testcontainers needed only when CI requires self-contained tests. Test helpers abstracted behind `internal/testutil/` so migration is zero-cost. See Lesson 005. |
 
 ---
 
