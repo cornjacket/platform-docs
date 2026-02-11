@@ -8,17 +8,18 @@
 
 ## Current Focus
 
-- [x] Basic logging with structured JSON
-- [x] OpenAPI specs for all service endpoints
-- [x] Query Service: read from projections
-- [x] Automated end-to-end test
-- [x] Service client libraries (restructure for component testing)
-- [x] Time handling strategy (device time vs ingestion time, testability)
-- [x] Unit tests
-- [x] Integration tests (real Postgres/Redpanda via docker-compose)
-- [x] Top-level service wrappers (main.go entry points for each platform service)
-- [x] Component tests (real Postgres/Redpanda via docker-compose)
-- [x] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
+Phase 1: Local Skeleton is complete. The system now provides an end-to-end event flow working locally with minimal code, including:
+- Basic logging with structured JSON
+- OpenAPI specs for all service endpoints
+- Query Service: read from projections
+- Automated end-to-end test
+- Service client libraries (restructure for component testing)
+- Time handling strategy (device time vs ingestion time, testability)
+- Unit tests
+- Integration tests (real Postgres/Redpanda via docker-compose)
+- Top-level service wrappers (main.go entry points for each platform service)
+- Component tests (real Postgres/Redpanda via docker-compose)
+- Repositories tagged with `phase-1-local-skeleton`
 
 ## Milestones
 
@@ -28,24 +29,6 @@
 ```
 HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (Event Handler)
 ```
-
-- [x] Go module initialized with directory structure
-- [x] docker-compose.yml with Postgres + Redpanda
-- [x] Database migrations (outbox, event_store, projections, dlq tables)
-- [x] Ingestion Service: HTTP endpoint → outbox write
-- [x] Ingestion Worker: NOTIFY/LISTEN → event store + Redpanda publish
-- [x] Event Handler: Redpanda consumer → projection update
-- [x] Basic logging with structured JSON
-- [x] OpenAPI specs for all service endpoints
-- [x] Query Service: read from projections
-- [x] Automated end-to-end test
-- [x] Service client libraries (restructure for component testing)
-- [x] Time handling strategy (device time vs ingestion time, testability)
-- [x] Unit tests
-- [x] Integration tests (real Postgres/Redpanda via docker-compose)
-- [x] Top-level service wrappers (main.go entry points for each platform service)
-- [x] Component tests (real Postgres/Redpanda via docker-compose)
-- [x] Tag `phase-1-local-skeleton` on platform-services, platform-docs, platform-infra
 
 **Skipping:** Action Orchestrator, AI Service, MQTT, Traefik, authentication, AWS
 
