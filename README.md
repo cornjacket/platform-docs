@@ -129,7 +129,7 @@ The centralized source of truth for the platform’s evolution and standards.
 
 | Document | Purpose |
 |----------|---------|
-| [PROJECT.md](PROJECT.md) | Current phase, progress, and tagging policy |
+| [PROJECT.md](PROJECT.md) | Overall project status, progress, and tagging policy (focus on project design and implementation tasks) |
 | [design-spec.md](design-spec.md) | System design: data flow, event types, schemas, configuration |
 | [decisions/](decisions/) | Architectural Decision Records (ADRs) — "why we decided X" |
 | [insights/](insights/) | Patterns and learnings — "what we discovered" |
@@ -141,18 +141,18 @@ The centralized source of truth for the platform’s evolution and standards.
 |----------|---------|
 | [ARCHITECTURE.md](../platform-services/ARCHITECTURE.md) | Code structure, Clean Architecture alignment, dependency rules |
 | [DEVELOPMENT.md](../platform-services/DEVELOPMENT.md) | Build patterns, local dev setup, coding conventions |
-| [tasks/](../platform-services/tasks/) | Feature implementation task documents and backlog |
+| [tasks/](../platform-services/tasks/) | Project design and implementation task documents and backlog |
 | [e2e/README.md](../platform-services/e2e/README.md) | End-to-end test framework and usage |
 
 ## Backlog for platform-services
 
-The `platform-services/tasks/backlog/` directory contains potential future tasks that are not yet committed for immediate implementation. These tasks are not numbered sequentially with the main `tasks/` directory. When a task from the backlog is committed for development, it will be moved from `backlog/` to `tasks/` and assigned the next available sequential number.
+The `platform-services/tasks/backlog/` directory contains potential future **project design and implementation tasks** that are not yet committed for immediate implementation. These tasks are not numbered sequentially with the main `tasks/` directory. When a task from the backlog is committed for development, it will be moved from `backlog/` to `tasks/` and assigned the next available sequential number.
 
-The `platform-services/tasks/BACKLOG.md` file provides an index and summary of all items currently in the backlog. It serves as a central place to track potential work without conflating it with actively planned and sequenced tasks.
+The `platform-services/tasks/BACKLOG.md` file provides an index and summary of all **project design and implementation tasks** currently in the backlog. It serves as a central place to track potential work without conflating it with actively planned and sequenced tasks.
 
 This approach helps maintain a clear separation between:
-- **Committed Tasks:** Items in `platform-services/tasks/` that are part of the current development plan and are assigned sequential numbers.
-- **Potential Tasks (Backlog):** Items in `platform-services/tasks/backlog/` that are identified but not yet prioritized or scheduled for implementation.
+- **Committed Tasks:** Items in `platform-services/tasks/` that are part of the current development plan and are assigned sequential numbers, specifically focusing on **project design and implementation**.
+- **Potential Tasks (Backlog):** Items in `platform-services/tasks/backlog/` that are identified but not yet prioritized or scheduled for implementation, specifically focusing on **project design and implementation**.
 
 This ensures that the main `tasks/` directory remains focused on immediate development, while the backlog provides a structured way to capture and manage future work.
 
