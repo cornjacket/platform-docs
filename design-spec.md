@@ -297,6 +297,9 @@ New event types and projections are added as features require them.
 | failed_at | TIMESTAMPTZ | When it failed |
 | retry_count | INTEGER | How many retries were attempted |
 | status | STRING | `pending`, `replayed`, `discarded` |
++
++**Note:** The database schema for the DLQ table has been implemented (see `platform-services/internal/services/eventhandler/migrations/002_create_dlq.sql`), but the application logic to write failed events to this table is not yet complete. For current status and future work, refer to the backlog task: [`platform-services/tasks/BACKLOG.md`](../platform-services/tasks/BACKLOG.md#000_dlq-implementationmd---dlq-implementation-status-event-handler-service).
+
 
 ### 6.4 Projections
 
@@ -740,6 +743,7 @@ The OpenAPI specs are the source of truth for API contracts. See individual spec
 |-----------|----------|---------|-------------|
 | Unit tests | `*_test.go` files | Test individual functions/methods in isolation | `go test ./...` |
 | Integration tests | `*_test.go` files | Test components with real dependencies (Postgres, Redpanda) | `go test -tags=integration ./...` |
+| Component tests | `*_test.go` files | Test service level boundaries with real dependencies (Postgres, Redpanda) | `go test -tags=component ./...` |
 | E2E tests | `e2e/` directory | Test complete flows through the system | Before releases, after changes |
 
 ### 15.2 Unit/Integration Tests
@@ -761,14 +765,6 @@ Unit tests verify individual functions without external dependencies. Integratio
 | `shared/projections` | `WriteProjection()`, `GetProjection()`, `ListProjections()` | Postgres |
 | `shared/infra/postgres` | `OutboxRepo`, `EventStoreRepo`, connection pool | Postgres |
 | `shared/infra/redpanda` | `Publish()`, partition key routing | Redpanda |
-
-**Service Component Tests (mock interfaces):**
-
-| Service | Mock Interface | Test Scenarios |
-|---------|----------------|----------------|
-| Ingestion Worker | `EventSubmitter` | Outbox processing calls `SubmitEvent()` correctly |
-| EventHandler | `projections.Store` | Event handlers call `WriteProjection()` with correct state |
-| Query Service | `ProjectionReader` | `GetProjection()`/`ListProjections()` return expected data |
 
 **Running tests:**
 ```bash
