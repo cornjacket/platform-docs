@@ -796,7 +796,72 @@ go tool cover -html=coverage.out
 
 Note: Coverage reports (`coverage.out`, `coverage.html`) are **not checked in**. They are ephemeral status metrics generated on demand or tracked by CI. See [Insight: Static vs Dynamic Documentation](insights/development/003-static-vs-dynamic-documentation.md).
 
-### 15.3 End-to-End Tests
+### 15.3 Component Tests
+
+Component tests exercise a full service pipeline through its `Start()` entry point. They use real infrastructure for inputs (Postgres, Redpanda) and channel-based mocks for outputs (`EventSubmitter`, `ProjectionWriter`).
+
+| Test Type | What It Tests | Infra | Mocks |
+|-----------|--------------|-------|-------|
+| Unit | Individual functions | None | All dependencies |
+| Integration | Single adapter (repo, producer) | Real DB or Redpanda | None |
+| **Component** | **Full service pipeline** | **Real DB + Redpanda** | **Service output only** |
+| E2E | All services together | Everything | None |
+
+**Build tag:** `//go:build component`
+
+**Running component tests:**
+```bash
+# All component tests (requires docker compose up)
+go test -tags=component -v ./internal/services/...
+
+# Single service
+go test -tags=component -v ./internal/services/ingestion/
+```
+
+**Channel-based mock pattern:**
+
+Component tests capture async service outputs using buffered channels. The mock's method writes to a channel; the test blocks with a `select` + timeout:
+
+```go
+mock := &channelSubmitter{calls: make(chan *events.Envelope, 10)}
+svc, _ := ingestion.Start(ctx, cfg, pool, mock, logger)
+
+// POST event via HTTP
+postEvent(t, payload)
+
+// Assert — wakes up the instant the worker calls SubmitEvent()
+select {
+case event := <-mock.calls:
+    assert.Equal(t, "sensor.reading", event.EventType)
+case <-time.After(5 * time.Second):
+    t.Fatal("timed out waiting for event submission")
+}
+```
+
+**Sentinel event pattern for negative assertions:**
+
+To prove an event was consumed but triggered no output (e.g., unknown event type → no projection write), avoid timeout-based assertions ("wait 500ms, check nothing happened"). Instead, produce the unknown event followed by a known event. Kafka's partition ordering guarantees the unknown event is processed first. When the mock receives the known event's output, the unknown event has already been processed and skipped:
+
+```go
+// Produce unknown event, then a known sentinel
+produceEvent(t, topic, unknownEnv)   // "billing.charge" — no handler registered
+produceEvent(t, topic, sensorEnv)    // "sensor.reading" — has handler
+
+// When sensor_state arrives, billing.charge was already processed and skipped
+select {
+case call := <-mock.calls:
+    assert.Equal(t, "sensor_state", call.ProjType)
+case <-time.After(5 * time.Second):
+    t.Fatal("timed out")
+}
+
+// Verify no extra writes from the unknown event
+assert.Empty(t, mock.calls)
+```
+
+This pattern works in any ordered pipeline (Kafka partitions, database sequences, FIFO queues). The key requirement: the sentinel and the unknown event must share the same ordering domain.
+
+### 15.4 End-to-End Tests
 
 E2E tests verify the complete event flow:
 ```
@@ -850,6 +915,7 @@ go run ./cmd/platform &
 
 | Date | Change |
 |------|--------|
+| 2026-02-10 | Add Component Tests section (15.3), renumber E2E to 15.4 |
 | 2026-02-07 | Add Time Handling section (13) |
 | 2026-02-07 | Add Unit/Integration Tests section (15.2) |
 | 2026-02-05 | Add Environment Variables section (12) |
