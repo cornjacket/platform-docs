@@ -8,6 +8,8 @@
 
 ## Current Focus
 
+- [ ] [Brainstorm Phase 2 Implementation](tasks/013-brainstorm-phase-2-implementation.md)
+
 Phase 1: Local Skeleton is complete. The system now provides an end-to-end event flow working locally with minimal code, including:
 - Basic logging with structured JSON
 - OpenAPI specs for all service endpoints
