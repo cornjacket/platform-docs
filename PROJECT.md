@@ -40,7 +40,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 
 - [x] [Brainstorm Phase 2 Implementation](tasks/013-brainstorm-phase-2-implementation.md)
 - [x] [Docker Compose Restructure & Platform Containerization](tasks/014-docker-compose-restructure.md)
-- [ ] [Embedded Migrations (service-owned, auto-applied on startup)](tasks/015-embedded-migrations.md)
+- [x] [Embedded Migrations (service-owned, auto-applied on startup)](tasks/015-embedded-migrations.md)
 - [ ] Add Traefik to docker-compose (HTTP routing)
 - [ ] Add EMQX to docker-compose (MQTT broker)
 - [ ] Action Orchestrator: webhook delivery

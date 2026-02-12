@@ -49,3 +49,5 @@ Each insight file follows this structure:
 | [Centralize Insights in Shared Docs Repo](development/004-centralize-insights-in-shared-docs-repo.md) | Development | Use platform-docs as single source of truth for all insights across repos |
 | [Event Schema as API Contract](architecture/003-event-schema-as-api-contract.md) | Architecture | The Go struct IS the contract — formalize only when ambiguity emerges |
 | [Phased Development with Milestone Tags](development/005-phased-development-with-milestone-tags.md) | Development | Break major work into formal phases; last checklist item is always the multi-repo milestone tag |
+| [Per-Service Migration Table Isolation](development/006-per-service-migration-table-isolation.md) | Development | Use per-service version tracking tables to avoid silent migration skipping in shared databases |
+| [Embed Migrations for Distroless Containers](development/007-embed-migrations-for-distroless-containers.md) | Development | Compile SQL migrations into the Go binary via `//go:embed` for zero-touch container deployment |

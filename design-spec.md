@@ -113,6 +113,8 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 
 **Migration Location:** Each service owns its migrations in `internal/services/<service>/migrations/`.
 
+**Migration Execution (ADR-0016):** Migrations are embedded into the binary via `//go:embed` and auto-applied on startup using `pressly/goose/v3`. Each service uses a dedicated goose tracking table (`goose_ingestion`, `goose_eventhandler`) to avoid version collision when services share a database. SQL files require `-- +goose Up` annotation. The `make migrate-all` target is retained as a dev reset convenience only.
+
 ### 2.8 Docker Compose Layering
 
 Two compose files in `platform-services/docker-compose/`, combined with `-f` flags:

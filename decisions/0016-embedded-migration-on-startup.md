@@ -1,6 +1,6 @@
 # ADR 0016: Embedded Migration on Startup
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-02-11
 * **Architect:** David
 
@@ -26,14 +26,14 @@ The gap is that ADR-0010 defines migration *ownership* but not migration *execut
 2. Each service package uses `//go:embed migrations/*.sql` to compile the SQL into the binary.
 3. On startup, before `Start()` opens any ports or consumers, a migration step:
    - Connects to the service's database
-   - Checks a `schema_migrations` table for already-applied versions
+   - Checks a per-service goose table (e.g., `goose_ingestion`) for already-applied versions
    - Applies any pending migrations in order
    - Skips already-applied migrations (idempotent)
 4. If migration fails, the service does not start.
 
 ### Library
 
-Use `golang-migrate/migrate` (or `pressly/goose`) — both support `io/fs` sources (compatible with `//go:embed`) and track applied versions in a metadata table.
+Using `pressly/goose/v3` — supports `io/fs` sources (compatible with `//go:embed`), accepts existing `001_*.sql` naming (no file renaming needed), and tracks applied versions in a per-service metadata table.
 
 ### Startup Order
 
@@ -72,14 +72,14 @@ The Makefile target remains as a development convenience for resetting a local d
 
 ### Trade-offs
 - Startup time increases slightly (migration check on every boot, even if nothing to apply)
-- Adds a library dependency (`golang-migrate` or `goose`)
+- Adds a library dependency (`pressly/goose/v3`)
 - Rollback migrations require careful design (down migrations vs forward-only)
 - All replicas race to migrate on simultaneous startup (library handles locking)
 
 ### Constraints
 - Migration files must be sequential and immutable once deployed (no editing applied migrations)
 - Forward-only migrations recommended (no down migrations in production)
-- `schema_migrations` table is owned by the migration library, not by any service
+- Each service uses a dedicated goose table (`goose_ingestion`, `goose_eventhandler`) to avoid version collision when services share a database in dev
 
 ## Related ADRs
 - ADR-0010: Database-Per-Service Pattern (migration ownership)
