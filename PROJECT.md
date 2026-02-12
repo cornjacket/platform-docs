@@ -8,23 +8,9 @@
 
 ## Current Focus
 
-- [ ] [014-port-collision-shutdown.md](tasks/014-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
-- [ ] [015-service-health-checks.md](tasks/015-service-health-checks.md) - All services should expose HTTP health check endpoints
-- [ ] Add Traefik to docker-compose (HTTP routing)
-- [ ] Add EMQX to docker-compose (MQTT broker)
-
-Phase 1: Local Skeleton is complete. The system now provides an end-to-end event flow working locally with minimal code, including:
-- Basic logging with structured JSON
-- OpenAPI specs for all service endpoints
-- Query Service: read from projections
-- Automated end-to-end test
-- Service client libraries (restructure for component testing)
-- Time handling strategy (device time vs ingestion time, testability)
-- Unit tests
-- Integration tests (real Postgres/Redpanda via docker-compose)
-- Top-level service wrappers (main.go entry points for each platform service)
-- Component tests (real Postgres/Redpanda via docker-compose)
-- Repositories tagged with `phase-1-local-skeleton`
+- [ ] [013-brainstorm-phase-2-implementation.md](tasks/013-brainstorm-phase-2-implementation.md) - Brainstorm Phase 2 Implementation
+- [ ] [016-port-collision-shutdown.md](tasks/016-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
+- [ ] [017-service-health-checks.md](tasks/017-service-health-checks.md) - All services should expose HTTP health check endpoints
 
 ## Milestones
 
@@ -40,9 +26,6 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 ### Phase 2: Local Full Stack
 **Goal:** All services running locally as sidecar pattern, both entry points
 
-- [x] [Brainstorm Phase 2 Implementation](tasks/013-brainstorm-phase-2-implementation.md)
-- [x] [Docker Compose Restructure & Platform Containerization](tasks/014-docker-compose-restructure.md)
-- [x] [Embedded Migrations (service-owned, auto-applied on startup)](tasks/015-embedded-migrations.md)
 - [ ] Add Traefik to docker-compose (HTTP routing)
 - [ ] Add EMQX to docker-compose (MQTT broker)
 - [ ] Action Orchestrator: webhook delivery
