@@ -59,5 +59,5 @@ Future feature epic (hypothetical):
 ## Related
 
 - [ADR-0011: Coordinated Tagging Across Repos](../../decisions/0011-coordinated-tagging-across-repos.md) — The tagging policy this insight operationalizes
-- [Task Documents as Design Specs](001-task-documents-as-design-specs.md) — Same principle: make invisible process steps visible through documentation structure
+- [Task Documents as Design Specs](002-task-documents-as-design-specs.md) — Same principle: make invisible process steps visible through documentation structure
 - [ai-builder-lessons/006](../../../ai-builder-lessons/lessons/006-explicit-milestone-tags-in-checklists.md) — Project-agnostic version of this insight

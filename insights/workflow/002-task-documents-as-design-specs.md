@@ -89,5 +89,5 @@ When creating task documents, include:
 
 ## Related
 
-- [Task Document Template](../../platform-services/tasks/README.md)
-- [Task 008: Time Handling Strategy](../../platform-services/tasks/008-time-handling-strategy.md) — Example of this pattern
+- [Task Document Template](../../../platform-services/tasks/README.md)
+- [Task 008: Time Handling Strategy](../../../platform-services/tasks/008-time-handling-strategy.md) — Example of this pattern

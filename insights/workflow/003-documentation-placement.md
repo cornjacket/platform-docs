@@ -65,7 +65,7 @@ Is it about operational PARAMETERS?
 
 ## Related
 
-- [ARCHITECTURE.md](../../platform-services/ARCHITECTURE.md)
-- [DEVELOPMENT.md](../../platform-services/DEVELOPMENT.md)
-- [Task Documents](../../platform-services/tasks/README.md)
-- [ADRs](../decisions/)
+- [ARCHITECTURE.md](../../../platform-services/ARCHITECTURE.md)
+- [DEVELOPMENT.md](../../../platform-services/DEVELOPMENT.md)
+- [Task Documents](../../../platform-services/tasks/README.md)
+- [ADRs](../../decisions/)
