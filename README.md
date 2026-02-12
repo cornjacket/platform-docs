@@ -135,6 +135,7 @@ The centralized source of truth for the platform’s evolution and standards.
 | [decisions/](decisions/) | Architectural Decision Records (ADRs) — "why we decided X" |
 | [insights/](insights/) | Patterns and learnings — "what we discovered" |
 | [insights/workflow/](insights/workflow/) | Patterns and learnings for workflow and collaboration |
+
 | [CLAUDE.md](CLAUDE.md) | Instructions for Claude Code AI assistant |
 
 ### platform-services
