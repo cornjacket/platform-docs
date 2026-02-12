@@ -130,6 +130,21 @@ Two compose files in `platform-services/docker-compose/`, combined with `-f` fla
 
 Both e2e test targets (`make e2e-skeleton`, `make e2e-fullstack`) must pass. See [DEVELOPMENT.md](../platform-services/DEVELOPMENT.md) for commands.
 
+### 2.9 Service Health & Startup Reliability
+
+**Health Checks:** Every service must expose a `GET /health` HTTP endpoint, including background workers. Process liveness alone is insufficient — a container can be alive but deadlocked, disconnected from Kafka, or holding a hung database connection. ECS and Kubernetes health checks are HTTP-based; without an endpoint, the orchestrator has no way to probe service health.
+
+| Service | Port | Health Endpoint | Status |
+|---------|------|-----------------|--------|
+| Ingestion | 8080 | `GET /health` | Implemented (shallow) |
+| Query | 8081 | `GET /health` | Not yet implemented |
+| Action Orchestrator | 8083 | `GET /health` | Not yet implemented |
+| Event Handler | 8084 | `GET /health` | Not yet implemented |
+
+Services that are primarily background workers (Event Handler) must still run a minimal HTTP server solely for health checks. The health endpoint should reflect actual readiness — not just "process is alive" but "I am connected and processing."
+
+**Startup Error Propagation:** If any HTTP server fails to bind its port (or encounters any fatal startup error), the entire process must initiate graceful shutdown and exit with a non-zero code. Async goroutine errors must be propagated to the main goroutine — logging alone is not sufficient. See [Insight 008](insights/development/008-propagate-async-server-errors.md).
+
 ---
 
 ## 3. Data Flow
@@ -930,6 +945,7 @@ go run ./cmd/platform &
 
 | Date | Change |
 |------|--------|
+| 2026-02-12 | Add Service Health & Startup Reliability section (2.9) |
 | 2026-02-11 | Add Docker Compose Layering section (2.8) |
 | 2026-02-10 | Add Component Tests section (15.3), renumber E2E to 15.4 |
 | 2026-02-07 | Add Time Handling section (13) |
