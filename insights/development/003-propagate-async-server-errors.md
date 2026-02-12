@@ -45,5 +45,5 @@ case err := <-errCh:
 
 ## Related
 
-- [Backlog 002: Port Collision Shutdown](../../platform-services/tasks/backlog/002_port-collision-shutdown.md)
-- [Backlog 003: Service Health Checks](../../platform-services/tasks/backlog/003_service-health-checks.md)
+- [Task 016: Port Collision Shutdown](../../../platform-services/tasks/016-port-collision-shutdown.md)
+- [Task 017: Service Health Checks](../../../platform-services/tasks/017-service-health-checks.md)

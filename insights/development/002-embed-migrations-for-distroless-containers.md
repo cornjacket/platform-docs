@@ -49,4 +49,4 @@ Goose requires `-- +goose Up` at the top of each SQL file. PL/pgSQL functions wi
 
 - [ADR-0016: Embedded Migration on Startup](../../decisions/0016-embedded-migration-on-startup.md)
 - [Spec 015: Embedded Migrations](../../platform-services/tasks/015-embedded-migrations.md)
-- [Per-Service Migration Table Isolation](006-per-service-migration-table-isolation.md)
+- [Per-Service Migration Table Isolation](001-per-service-migration-table-isolation.md)

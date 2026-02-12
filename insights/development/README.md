@@ -6,6 +6,6 @@ This directory contains insights related to specific technical patterns, solutio
 
 | # | Title |
 |---|-------|
-| [006](006-per-service-migration-table-isolation.md) | Per-Service Migration Table Isolation |
-| [007](007-embed-migrations-for-distroless-containers.md) | Embed Migrations for Distroless Containers |
-| [008](008-propagate-async-server-errors.md) | Propagate Async Server Errors |
+| [001](001-per-service-migration-table-isolation.md) | Per-Service Migration Table Isolation |
+| [002](002-embed-migrations-for-distroless-containers.md) | Embed Migrations for Distroless Containers |
+| [003](003-propagate-async-server-errors.md) | Propagate Async Server Errors |
