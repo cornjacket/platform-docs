@@ -43,7 +43,8 @@ cornjacket-platform/                      # Wrapper folder (not a Git repo)
     ├── insights/                         # Architectural patterns and learnings
     │   ├── architecture/
     │   │   └── 001-time-separation-of-concerns.md
-    │   └── development/
+    │   ├── development/
+    │   └── workflow/
 ```
 
 ## Key Architectural Principles
@@ -133,6 +134,7 @@ The centralized source of truth for the platform’s evolution and standards.
 | [design-spec.md](design-spec.md) | System design: data flow, event types, schemas, configuration |
 | [decisions/](decisions/) | Architectural Decision Records (ADRs) — "why we decided X" |
 | [insights/](insights/) | Patterns and learnings — "what we discovered" |
+| [insights/workflow/](insights/workflow/) | Patterns and learnings for workflow and collaboration |
 | [CLAUDE.md](CLAUDE.md) | Instructions for Claude Code AI assistant |
 
 ### platform-services
