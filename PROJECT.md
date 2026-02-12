@@ -8,7 +8,8 @@
 
 ## Current Focus
 
-- [ ] [Docker Compose Restructure & Platform Containerization](tasks/014-docker-compose-restructure.md)
+- [ ] Add Traefik to docker-compose (HTTP routing)
+- [ ] Add EMQX to docker-compose (MQTT broker)
 
 Phase 1: Local Skeleton is complete. The system now provides an end-to-end event flow working locally with minimal code, including:
 - Basic logging with structured JSON
@@ -38,7 +39,8 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 **Goal:** All services running locally as sidecar pattern, both entry points
 
 - [x] [Brainstorm Phase 2 Implementation](tasks/013-brainstorm-phase-2-implementation.md)
-- [ ] [Docker Compose Restructure & Platform Containerization](tasks/014-docker-compose-restructure.md)
+- [x] [Docker Compose Restructure & Platform Containerization](tasks/014-docker-compose-restructure.md)
+- [ ] [Embedded Migrations (service-owned, auto-applied on startup)](tasks/015-embedded-migrations.md)
 - [ ] Add Traefik to docker-compose (HTTP routing)
 - [ ] Add EMQX to docker-compose (MQTT broker)
 - [ ] Action Orchestrator: webhook delivery

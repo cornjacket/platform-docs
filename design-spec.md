@@ -23,6 +23,8 @@ This document contains operational details, configuration parameters, and implem
 | [0012](decisions/0012-outbox-processing-strategy.md) | Outbox Processing Strategy |
 | [0013](decisions/0013-uuid-v7-standardization.md) | UUID v7 Standardization |
 | [0014](decisions/0014-event-handler-consumer-strategy.md) | Event Handler Consumer Strategy |
+| [0015](decisions/0015-time-handling-strategy.md) | Time Handling Strategy |
+| [0016](decisions/0016-embedded-migration-on-startup.md) | Embedded Migration on Startup |
 
 ---
 
@@ -110,6 +112,21 @@ postgres://cornjacket:cornjacket@localhost:5432/cornjacket?sslmode=disable
 ```
 
 **Migration Location:** Each service owns its migrations in `internal/services/<service>/migrations/`.
+
+### 2.8 Docker Compose Layering
+
+Two compose files in `platform-services/docker-compose/`, combined with `-f` flags:
+
+| File | Services | Purpose |
+|------|----------|---------|
+| `docker-compose.yaml` | Postgres, Redpanda, Redpanda Console | Base infrastructure (always needed) |
+| `docker-compose.fullstack.yaml` | Platform (container), Traefik, EMQX | Overlay for production-fidelity testing |
+
+**Skeleton mode** (`make skeleton-up`): Base file only. Platform binary runs on the host, connecting to containerized infrastructure via `localhost`. Used for day-to-day Go development, integration tests, component tests, and skeleton e2e tests.
+
+**Fullstack mode** (`make fullstack-up`): Base + overlay. Platform runs as a container on the Docker network. Traefik routes HTTP on port 80, EMQX handles MQTT on port 1883. Used for fullstack e2e tests and verifying the containerized deployment.
+
+Both e2e test targets (`make e2e-skeleton`, `make e2e-fullstack`) must pass. See [DEVELOPMENT.md](../platform-services/DEVELOPMENT.md) for commands.
 
 ---
 
@@ -911,6 +928,7 @@ go run ./cmd/platform &
 
 | Date | Change |
 |------|--------|
+| 2026-02-11 | Add Docker Compose Layering section (2.8) |
 | 2026-02-10 | Add Component Tests section (15.3), renumber E2E to 15.4 |
 | 2026-02-07 | Add Time Handling section (13) |
 | 2026-02-07 | Add Unit/Integration Tests section (15.2) |
