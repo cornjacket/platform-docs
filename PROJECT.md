@@ -8,7 +8,7 @@
 
 ## Current Focus
 
-- [ ] [Brainstorm Phase 2 Implementation](tasks/013-brainstorm-phase-2-implementation.md)
+- [ ] [Docker Compose Restructure & Platform Containerization](tasks/014-docker-compose-restructure.md)
 
 Phase 1: Local Skeleton is complete. The system now provides an end-to-end event flow working locally with minimal code, including:
 - Basic logging with structured JSON
@@ -37,6 +37,8 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 ### Phase 2: Local Full Stack
 **Goal:** All services running locally as sidecar pattern, both entry points
 
+- [x] [Brainstorm Phase 2 Implementation](tasks/013-brainstorm-phase-2-implementation.md)
+- [ ] [Docker Compose Restructure & Platform Containerization](tasks/014-docker-compose-restructure.md)
 - [ ] Add Traefik to docker-compose (HTTP routing)
 - [ ] Add EMQX to docker-compose (MQTT broker)
 - [ ] Action Orchestrator: webhook delivery
@@ -99,6 +101,7 @@ Implementation decisions made during development (not ADR-level).
 | 2026-02-06 | Move Query Service to Phase 1 | Enables automated e2e testing |
 | 2026-02-06 | Add service client libraries before unit tests | Enables component testing with mocks |
 | 2026-02-10 | Integration tests use docker-compose (Phase 1), defer testcontainers to Phase 3 | docker-compose already exists; testcontainers needed only when CI requires self-contained tests. Test helpers abstracted behind `internal/testutil/` so migration is zero-cost. See Lesson 005. |
+| 2026-02-11 | Layered Docker Compose: subdirectory with base + fullstack overlay, no profiles | Two modes (skeleton for dev speed, fullstack for production fidelity). `-f` flags simpler than profiles. Details in Task 013, implementation in Spec 014. |
 
 ---
 
