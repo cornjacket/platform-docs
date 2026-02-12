@@ -8,6 +8,8 @@
 
 ## Current Focus
 
+- [ ] [014-port-collision-shutdown.md](tasks/014-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
+- [ ] [015-service-health-checks.md](tasks/015-service-health-checks.md) - All services should expose HTTP health check endpoints
 - [ ] Add Traefik to docker-compose (HTTP routing)
 - [ ] Add EMQX to docker-compose (MQTT broker)
 
