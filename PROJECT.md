@@ -9,7 +9,7 @@
 ## Current Focus
 
 - [ ] [013-brainstorm-phase-2-implementation.md](tasks/013-brainstorm-phase-2-implementation.md) - Brainstorm Phase 2 Implementation
-- [ ] [016-port-collision-shutdown.md](tasks/016-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
+- [x] [016-port-collision-shutdown.md](tasks/016-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
 - [ ] [017-service-health-checks.md](tasks/017-service-health-checks.md) - All services should expose HTTP health check endpoints
 
 ## Milestones
