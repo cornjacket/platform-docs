@@ -4,13 +4,24 @@
 
 ## Current Phase
 
-**Phase 1: Local Skeleton**
+**Phase 2: Local Full Stack**
 
 ## Current Focus
 
-- [ ] [013-brainstorm-phase-2-implementation.md](tasks/013-brainstorm-phase-2-implementation.md) - Brainstorm Phase 2 Implementation
+- [x] [013-brainstorm-phase-2-implementation.md](tasks/013-brainstorm-phase-2-implementation.md) - Brainstorm Phase 2 Implementation
 - [x] [016-port-collision-shutdown.md](tasks/016-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
-- [ ] [017-service-health-checks.md](tasks/017-service-health-checks.md) - All services should expose HTTP health check endpoints
+- [ ] Add Traefik to docker-compose (HTTP routing)
+- [ ] Add EMQX to docker-compose (MQTT broker)
+- [ ] Brainstorm Action Orchestrator
+- [ ] Action Orchestrator: webhook delivery
+- [ ] Service Health Check Endpoints (task already in BACKLOG.md)
+- [ ] MQTT ingestion path (EMQX → Ingestion Service)
+- [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
+- [ ] E2E local test: HTTP + MQTT → projections → query
+- [ ] Component tests with real client libraries
+- [ ] Learn how to effectively use Redpanda (topics, consumer groups, etc.) for Phase 2 requirements.
+- [ ] Evaluate whether pull requests are needed for this project
+- [ ] Tag `phase-2-local-full-stack` on platform-services, platform-docs, platform-infra
 
 ## Milestones
 
@@ -26,16 +37,7 @@ HTTP Request → Ingestion → Outbox → Event Store + Redpanda → Consumer (E
 ### Phase 2: Local Full Stack
 **Goal:** All services running locally as sidecar pattern, both entry points
 
-- [ ] Add Traefik to docker-compose (HTTP routing)
-- [ ] Add EMQX to docker-compose (MQTT broker)
-- [ ] Action Orchestrator: webhook delivery
-- [ ] MQTT ingestion path (EMQX → Ingestion Service)
-- [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
-- [ ] E2E local test: HTTP + MQTT → projections → query
-- [ ] Component tests with real client libraries
-- [ ] Learn how to effectively use Redpanda (topics, consumer groups, etc.) for Phase 2 requirements.
-- [ ] Evaluate whether pull requests are needed for this project
-- [ ] Tag `phase-2-local-full-stack` on platform-services, platform-docs, platform-infra
+See **Current Focus** above for task list.
 
 **Skipping:** AWS, CI/CD, AI Service
 
