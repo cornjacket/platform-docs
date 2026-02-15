@@ -132,7 +132,7 @@ The centralized source of truth for the platform’s evolution and standards.
 |----------|---------|
 | [PROJECT.md](PROJECT.md) | Overall project status, progress, and tagging policy (focus on project design and implementation tasks) |
 | [design-spec.md](design-spec.md) | System design: data flow, event types, schemas, configuration |
-| [decisions/](decisions/) | Architectural Decision Records (ADRs) — "why we decided X" |
+| [Architectural Decision Records (ADRs)](decisions/README.md) | Index and summary of Architectural Decision Records (ADRs) — "why we decided X" |
 | [insights/](insights/) | Patterns and learnings — "what we discovered" |
 | [insights/workflow/](insights/workflow/) | Patterns and learnings for workflow and collaboration |
 

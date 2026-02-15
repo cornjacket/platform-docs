@@ -3,7 +3,7 @@
 **Last Updated:** 2026-02-06
 **Status:** Living Document
 
-This document contains operational details, configuration parameters, and implementation specifics that may change over time. For architectural decisions and rationale, see the ADRs in `decisions/`.
+This document contains operational details, configuration parameters, and implementation specifics that may change over time. For architectural decisions and rationale, see the [ADRs index](decisions/README.md).
 
 ## 1. Related ADRs
 

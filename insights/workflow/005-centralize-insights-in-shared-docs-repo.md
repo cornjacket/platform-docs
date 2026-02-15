@@ -33,5 +33,5 @@ platform-docs/insights/
 
 ## Related
 
-- [ADR-0011](../../decisions/) — Tagging policy (another case of "avoid proliferation")
+- [ADR-0011](../../decisions/README.md) — Tagging policy (another case of "avoid proliferation")
 - [AI Builder Lesson 002](../../../ai-builder-lessons/lessons/002-project-insights-folder-complements-adrs.md) — The general lesson about insights vs ADRs

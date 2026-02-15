@@ -10,15 +10,16 @@
 
 - [x] [013-brainstorm-phase-2-implementation.md](tasks/013-brainstorm-phase-2-implementation.md) - Brainstorm Phase 2 Implementation
 - [x] [016-port-collision-shutdown.md](tasks/016-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
-- [ ] Add Traefik to docker-compose (HTTP routing)
-- [ ] Add EMQX to docker-compose (MQTT broker)
+- [ ] Brainstorm immediate versus eventual response, required platform services, and proper service naming
 - [ ] Brainstorm Action Orchestrator
+- [ ] Brainstorm AI Inference
 - [ ] Action Orchestrator: webhook delivery
 - [ ] Service Health Check Endpoints (task already in BACKLOG.md)
+- [ ] Add Traefik to docker-compose (HTTP routing) — Traefik already configured; validation task in [Backlog 004](../platform-services/tasks/backlog/004_validate-traefik-e2e.md)
+- [ ] Add EMQX to docker-compose (MQTT broker)
 - [ ] MQTT ingestion path (EMQX → Ingestion Service)
 - [ ] Full sidecar simulation in docker-compose (mirrors ECS task definition)
 - [ ] E2E local test: HTTP + MQTT → projections → query
-- [ ] Component tests with real client libraries
 - [ ] Learn how to effectively use Redpanda (topics, consumer groups, etc.) for Phase 2 requirements.
 - [ ] Evaluate whether pull requests are needed for this project
 - [ ] Tag `phase-2-local-full-stack` on platform-services, platform-docs, platform-infra
@@ -115,6 +116,6 @@ Apply the same tag to all three repos. Intermediate progress is tracked via comm
 
 ## Reference
 
-- [ADRs](decisions/) — Architectural decisions
+- [ADRs](decisions/README.md) — Architectural decisions
 - [Design Spec](design-spec.md) — Operational parameters
 - [Development Guide](../platform-services/DEVELOPMENT.md) — Build patterns and conventions
