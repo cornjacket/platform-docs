@@ -79,5 +79,5 @@ CI produces and tracks the actual numbers (status).
 
 ## Related
 
-- [design-spec.md §15 Testing](../../design-spec.md#15-testing)
+- [design-spec §15 Testing](../../design-spec/15-testing.md)
 - [003-documentation-placement.md](003-documentation-placement.md)

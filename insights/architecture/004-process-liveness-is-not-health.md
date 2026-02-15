@@ -41,6 +41,6 @@ go http.ListenAndServe(":8084", mux)
 
 ## Related
 
-- [Design Spec: Section 2.9 — Service Health & Startup Reliability](../../design-spec.md)
+- [Design Spec: Section 2.9 — Service Health & Startup Reliability](../../design-spec/02-dev-environment.md)
 - [Insight: Propagate Async Server Errors to Main](../development/008-propagate-async-server-errors.md)
 - [Backlog 003: Service Health Checks](../../platform-services/tasks/backlog/003_service-health-checks.md)
