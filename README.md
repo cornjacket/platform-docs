@@ -137,7 +137,6 @@ The centralized source of truth for the platform’s evolution and standards.
 | [insights/workflow/](insights/workflow/) | Patterns and learnings for workflow and collaboration |
 
 | [CLAUDE.md](CLAUDE.md) | Instructions for Claude Code AI assistant |
-| [Periodic AI Events (Backlog)](../platform-services/tasks/backlog/periodic-ai-events.md) | Proposed workflow for AI-driven recurring tasks |
 
 ### platform-services
 
