@@ -54,6 +54,8 @@ cornjacket-platform/
 For each repo (docs, infra, services):
 - Move current repo to temporary backup
 - Create bare clone: `git clone --bare <url> .repos/<repo>.git`
+- **Configure fetch refspec** (bare clones strip this): `git -C .repos/<repo>.git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"`
+- **Fetch remote tracking refs**: `git -C .repos/<repo>.git fetch origin`
 - Verify bare repo has all branches and tags
 - Delete temporary backup
 
@@ -61,6 +63,7 @@ For each repo (docs, infra, services):
 For each bare repo:
 - Create parent directory: `mkdir -p platform-<repo>`
 - Add main worktree: `git -C .repos/<repo>.git worktree add ../platform-<repo>/main main`
+- **Set upstream tracking**: `git -C platform-<repo>/main branch --set-upstream-to=origin/main main`
 
 ### 4. Automation Script
 Create `create-feature.sh` in workspace root:
@@ -150,6 +153,8 @@ Add a workflow section to CLAUDE.md (or README.md) describing how to create and 
 2. **Cross-repo relative paths** — update all cross-repo markdown links to use `{GIT_COMMON_BRANCH_NAME}` in the path (e.g., `../../platform-services/{GIT_COMMON_BRANCH_NAME}/DEVELOPMENT.md`). This serves two purposes: (a) tells AI agents to resolve the path using their current branch, and (b) reinforces that all repos should be on the same branch during feature work. These links are for AI navigation, not human browsing.
 
 3. **`create-feature.sh` atomic creation** — script always creates new branches (`-b`) from main across all three repos. If any repo fails, all previously created worktrees and branches are rolled back. This is for AI-driven parallel feature work, not for sharing remote branches.
+
+4. **Bare repo fetch refspec** — `git clone --bare` strips `remote.origin.fetch`, so bare repos can't fetch or track remote branches. Must configure the refspec and fetch after cloning, then set upstream tracking on the `main` worktree. This is a one-time setup step, not per-branch.
 
 ## Verification
 
