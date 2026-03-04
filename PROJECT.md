@@ -11,6 +11,7 @@
 - [x] [013-brainstorm-phase-2-implementation.md](../platform-services/tasks/013-brainstorm-phase-2-implementation.md) - Brainstorm Phase 2 Implementation
 - [x] [016-port-collision-shutdown.md](../platform-services/tasks/016-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
 - [x] [001-git-worktree-restructure.md](tasks/001-git-worktree-restructure.md) - Transition to Git Worktree Structure
+- [ ] [002-workspace-bootstrap-script.md](tasks/002-workspace-bootstrap-script.md) - Workspace Bootstrap Script
 - [ ] Brainstorm immediate versus eventual response, required platform services, and proper service naming
 - [ ] Brainstorm Action Orchestrator
 - [ ] Brainstorm AI Inference
