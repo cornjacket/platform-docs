@@ -23,7 +23,7 @@ After the worktree restructure (Task 001), this script should also:
 - Fetch remote tracking refs: `git fetch origin`
 - Initialize `main/` worktrees for each repo
 - Set upstream tracking on each `main` worktree: `git branch --set-upstream-to=origin/main main`
-- Make `create-feature.sh` executable
+- Symlink workspace scripts from `platform-docs/main/tools/` to workspace root (`create-feature.sh`, `remove-feature.sh`)
 
 ## Notes
 
