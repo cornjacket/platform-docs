@@ -33,8 +33,7 @@ Create `platform-docs/tools/bootstrap.sh` that:
 5. Fetches remote tracking refs: `git fetch origin`
 6. Initializes `main/` worktrees for each repo
 7. Sets upstream tracking on each `main` worktree: `git branch --set-upstream-to=origin/main main`
-8. Clones `ai-builder-lessons` (standard clone, not a worktree repo)
-9. Symlinks workspace scripts from `platform-docs/main/tools/` to workspace root (`create-feature.sh`, `remove-feature.sh`)
+8. Symlinks workspace scripts from `platform-docs/main/tools/` to workspace root (`create-feature.sh`, `remove-feature.sh`)
 10. Sets up `CLAUDE.md` and `GEMINI.md` symlinks
 11. Deletes the temporary `platform-docs` clone (the one used to run the script)
 12. Prints next steps

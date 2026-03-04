@@ -95,7 +95,6 @@ cd cornjacket-platform   # or your chosen name
 The bootstrap script:
 - Creates bare repos in `.repos/` with proper fetch refspecs and remote tracking
 - Sets up `main/` worktrees for platform-docs, platform-infra, and platform-services
-- Clones ai-builder-lessons (standard clone)
 - Symlinks CLAUDE.md, GEMINI.md, and workspace scripts from `platform-docs/main/tools/`
 - Deletes the temporary platform-docs clone (replaced by the worktree version)
 
