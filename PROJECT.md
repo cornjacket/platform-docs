@@ -8,8 +8,8 @@
 
 ## Current Focus
 
-- [x] [013-brainstorm-phase-2-implementation.md](tasks/013-brainstorm-phase-2-implementation.md) - Brainstorm Phase 2 Implementation
-- [x] [016-port-collision-shutdown.md](tasks/016-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
+- [x] [013-brainstorm-phase-2-implementation.md](../platform-services/tasks/013-brainstorm-phase-2-implementation.md) - Brainstorm Phase 2 Implementation
+- [x] [016-port-collision-shutdown.md](../platform-services/tasks/016-port-collision-shutdown.md) - Bug: Port collision does not trigger process shutdown
 - [ ] Brainstorm immediate versus eventual response, required platform services, and proper service naming
 - [ ] Brainstorm Action Orchestrator
 - [ ] Brainstorm AI Inference

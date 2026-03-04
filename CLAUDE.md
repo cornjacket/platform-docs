@@ -71,7 +71,14 @@ This rule ensures:
 
 ## Feature Development Process
 
-All changes are tracked in `platform-services/tasks/` using a shared numbering sequence. There are two types:
+Changes are tracked in two task directories, each with its own numbering sequence:
+
+| Directory | Scope |
+|-----------|-------|
+| `platform-services/tasks/` | Code, tests, service-level docs |
+| `platform-docs/tasks/` | Workspace structure, cross-repo concerns, project process |
+
+There are two types of task document:
 
 ### Specs (heavyweight — design review required)
 
@@ -91,7 +98,7 @@ For bug fixes, minor changes, config tweaks, or any small change that doesn't ne
 
 **Grouping rule:** Closely related tasks in the same session can share a single task document to avoid proliferation. Group by coherence (same area of concern), not just timing. Unrelated changes get separate docs. Specs are never grouped.
 
-See `platform-services/tasks/README.md` for both templates, conventions, and the full index.
+See `platform-services/tasks/README.md` and `platform-docs/tasks/README.md` for templates, conventions, and indexes.
 
 ## Tagging Policy
 
@@ -103,6 +110,15 @@ Tags are created at **phase completion** and **releases** only (see ADR-0011). T
 | Release | `vX.Y.Z` | `v0.1.0` |
 
 Apply the same tag to all three repos. Intermediate progress is tracked via commits, not tags.
+
+## Conciseness Rule
+
+**Be concise in all output.** This applies to both conversational responses and generated documents (task docs, specs, comments, commit messages). Avoid filler, redundant explanations, and over-elaboration. Say what needs to be said, then stop. This directly reduces token usage and keeps context windows focused on useful information.
+
+- Prefer short sentences over long ones
+- Omit obvious context the user already knows
+- In documents, use tables and bullet points over prose where possible
+- Don't repeat information that exists elsewhere — link to it instead
 
 ## AI Builder Lessons
 
