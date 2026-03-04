@@ -4,4 +4,4 @@ This directory (`backlog/`) contains potential future tasks for project-wide con
 
 ## Tasks
 
-- [ ] [000_workspace-bootstrap-script.md](backlog/000_workspace-bootstrap-script.md) - Workspace Bootstrap Script for New Users
+*No backlog items — all promoted to tasks.*

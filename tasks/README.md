@@ -20,3 +20,4 @@ Project-wide tasks that affect workspace structure, cross-repo concerns, or proj
 | # | Type | Status | Description |
 |---|------|--------|-------------|
 | [001](001-git-worktree-restructure.md) | Task | Complete | Transition to Git Worktree Structure |
+| [002](002-workspace-bootstrap-script.md) | Task | Pending | Workspace Bootstrap Script |
