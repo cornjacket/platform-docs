@@ -62,55 +62,15 @@ For each repo (docs, infra, services):
 ### 3. Initialize Worktrees
 For each bare repo:
 - Create parent directory: `mkdir -p platform-<repo>`
-- Add main worktree: `git -C .repos/<repo>.git worktree add ../platform-<repo>/main main`
+- Add main worktree: `git -C .repos/<repo>.git worktree add ../../platform-<repo>/main main`
 - **Set upstream tracking**: `git -C platform-<repo>/main branch --set-upstream-to=origin/main main`
 
-### 4. Automation Script
-Create `create-feature.sh` in workspace root:
+### 4. Automation Scripts
+Create `create-feature.sh` and `remove-feature.sh` in workspace root.
 
-```bash
-#!/bin/bash
-BRANCH_NAME=$1
-if [ -z "$BRANCH_NAME" ]; then
-    echo "Error: Please provide a branch name."
-    exit 1
-fi
+**Note:** Bare repo paths use `../../` for worktree targets because `git -C .repos/<repo>.git` sets the cwd two levels deep. `../../$TARGET_DIR` resolves back to the workspace root.
 
-REPOS=("docs" "infra" "services")
-CREATED=()
-
-for repo in "${REPOS[@]}"; do
-    BARE_REPO=".repos/${repo}.git"
-    TARGET_DIR="platform-${repo}/${BRANCH_NAME}"
-    echo "Processing $repo..."
-    if [ -d "$TARGET_DIR" ]; then
-        echo "  [Error] Directory $TARGET_DIR already exists."
-        # Rollback any worktrees created in this run
-        for created_repo in "${CREATED[@]}"; do
-            ROLLBACK_DIR="platform-${created_repo}/${BRANCH_NAME}"
-            echo "  [Rollback] Removing $ROLLBACK_DIR"
-            git -C ".repos/${created_repo}.git" worktree remove "../$ROLLBACK_DIR" --force
-            git -C ".repos/${created_repo}.git" branch -D "$BRANCH_NAME" 2>/dev/null
-        done
-        echo "All branches rolled back. No worktrees created."
-        exit 1
-    fi
-    if ! git -C "$BARE_REPO" worktree add "../$TARGET_DIR" -b "$BRANCH_NAME" main; then
-        echo "  [Error] Failed to create worktree for $repo."
-        for created_repo in "${CREATED[@]}"; do
-            ROLLBACK_DIR="platform-${created_repo}/${BRANCH_NAME}"
-            echo "  [Rollback] Removing $ROLLBACK_DIR"
-            git -C ".repos/${created_repo}.git" worktree remove "../$ROLLBACK_DIR" --force
-            git -C ".repos/${created_repo}.git" branch -D "$BRANCH_NAME" 2>/dev/null
-        done
-        echo "All branches rolled back. No worktrees created."
-        exit 1
-    fi
-    CREATED+=("$repo")
-done
-
-echo "Feature '$BRANCH_NAME' created across all repos."
-```
+See the actual scripts at workspace root for current implementation.
 
 ### 5. Environment Cleanup
 - Update CLAUDE.md and GEMINI.md symlinks to new paths
@@ -136,9 +96,7 @@ Add a workflow section to CLAUDE.md (or README.md) describing how to create and 
 
 4. When done, merge each repo's feature branch to main independently,
    then remove the worktrees:
-   git -C .repos/docs.git worktree remove ../platform-docs/feature-name
-   git -C .repos/infra.git worktree remove ../platform-infra/feature-name
-   git -C .repos/services.git worktree remove ../platform-services/feature-name
+   ./remove-feature.sh feature-name
 ```
 
 ## Constraints

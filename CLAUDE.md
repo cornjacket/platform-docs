@@ -21,7 +21,8 @@ cornjacket-platform/
 ├── platform-docs/main/
 ├── platform-infra/main/
 ├── platform-services/main/
-└── create-feature.sh
+├── create-feature.sh
+└── remove-feature.sh
 ```
 
 ### Feature Branch Workflow
@@ -29,12 +30,7 @@ cornjacket-platform/
 1. Create feature worktrees across all repos: `./create-feature.sh feature-name`
 2. This creates `platform-docs/feature-name/`, `platform-infra/feature-name/`, `platform-services/feature-name/`
 3. Work in the feature worktrees. AI agents should operate within the same branch name across all repos.
-4. When done, merge each repo's feature branch to main independently, then remove the worktrees:
-   ```
-   git -C .repos/docs.git worktree remove ../platform-docs/feature-name
-   git -C .repos/infra.git worktree remove ../platform-infra/feature-name
-   git -C .repos/services.git worktree remove ../platform-services/feature-name
-   ```
+4. When done, merge each repo's feature branch to main independently, then remove the worktrees: `./remove-feature.sh feature-name`
 
 ### AI Agent Configuration Symlinks
 
