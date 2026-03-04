@@ -13,18 +13,41 @@ The workspace uses a **wrapper folder** pattern with 3 separate Git repositories
 - `platform-docs/` — Global documentation, ADRs, architecture decisions. Source of truth.
 - `ai-builder-lessons/` — Project-agnostic lessons learned from AI-assisted software development. Reusable across future projects.
 
-The `cornjacket-platform/` wrapper directory is **not** a Git repo. It is a logical container for cross-referencing between repos.
+The `cornjacket-platform/` wrapper directory is **not** a Git repo. It uses **bare repositories** (`.repos/`) with **git worktrees** for each branch:
+
+```
+cornjacket-platform/
+├── .repos/              # bare repos (docs.git, infra.git, services.git)
+├── platform-docs/main/
+├── platform-infra/main/
+├── platform-services/main/
+└── create-feature.sh
+```
+
+### Feature Branch Workflow
+
+1. Create feature worktrees across all repos: `./create-feature.sh feature-name`
+2. This creates `platform-docs/feature-name/`, `platform-infra/feature-name/`, `platform-services/feature-name/`
+3. Work in the feature worktrees. AI agents should operate within the same branch name across all repos.
+4. When done, merge each repo's feature branch to main independently, then remove the worktrees:
+   ```
+   git -C .repos/docs.git worktree remove ../platform-docs/feature-name
+   git -C .repos/infra.git worktree remove ../platform-infra/feature-name
+   git -C .repos/services.git worktree remove ../platform-services/feature-name
+   ```
 
 ### AI Agent Configuration Symlinks
 
-This file (`platform-docs/CLAUDE.md`) is the source of truth for AI agent instructions. It is symlinked from the wrapper directory so that AI agents automatically pick it up regardless of which tool is used:
+This file (`platform-docs/main/CLAUDE.md`) is the source of truth for AI agent instructions. It is symlinked from the wrapper directory so that AI agents automatically pick it up regardless of which tool is used:
 
-- `cornjacket-platform/CLAUDE.md` → `platform-docs/CLAUDE.md` (Claude Code, Cursor)
-- `cornjacket-platform/GEMINI.md` → `platform-docs/CLAUDE.md` (Gemini)
+- `cornjacket-platform/CLAUDE.md` → `platform-docs/main/CLAUDE.md` (Claude Code, Cursor)
+- `cornjacket-platform/GEMINI.md` → `platform-docs/main/CLAUDE.md` (Gemini)
 
-Both symlinks point to the same file. Edits made via either path modify this file in `platform-docs/`, where it is version-controlled.
+Both symlinks point to the same file on the `main` branch. Claude Code walks up the directory tree to find CLAUDE.md, so the root symlink is loaded regardless of which worktree Claude is invoked from.
 
-**After worktree restructure:** The root symlinks point to `platform-docs/main/CLAUDE.md`. Main branch is the source of truth. Claude Code walks up the directory tree to find CLAUDE.md, so the root symlink is loaded regardless of which worktree Claude is invoked from.
+### Cross-Repo Path Convention
+
+The workspace uses a **git worktree** layout: `platform-<repo>/<branch>/`. Cross-repo markdown links use the token `{GIT_COMMON_BRANCH_NAME}` in the path (e.g., `../../platform-services/{GIT_COMMON_BRANCH_NAME}/DEVELOPMENT.md`). AI agents must resolve this token to their current working branch. All repos should be on the same branch during feature work.
 
 ## Key Architecture
 
