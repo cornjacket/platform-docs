@@ -2,6 +2,8 @@
 
 This workspace organizes the platform into domain-specific repositories to enforce a **"need-to-know"** security model. By decoupling the foundational infrastructure from the application logic, we reduce the "blast radius" of changes and ensure that each component can evolve at its own pace.
 
+**This is an AI-first workspace.** The directory structure, cross-repo conventions, and tooling assume that AI agents are the primary actors creating, modifying, and navigating files across repos.
+
 ## Global Directory Structure
 
 <!-- Keep this tree concise: max 5 levels deep from cornjacket-platform/ -->

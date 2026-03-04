@@ -24,6 +24,8 @@ This file (`platform-docs/CLAUDE.md`) is the source of truth for AI agent instru
 
 Both symlinks point to the same file. Edits made via either path modify this file in `platform-docs/`, where it is version-controlled.
 
+**After worktree restructure:** The root symlinks point to `platform-docs/main/CLAUDE.md`. Main branch is the source of truth. Claude Code walks up the directory tree to find CLAUDE.md, so the root symlink is loaded regardless of which worktree Claude is invoked from.
+
 ## Key Architecture
 
 - **Entry Layer:** Traefik (HTTP gateway) + EMQX (MQTT broker)
@@ -63,11 +65,12 @@ This rule ensures:
 - Replay capability — from any tagged commit, the sequence of task docs can be used to reimplement the codebase
 - No changes slip through undocumented, regardless of how they were initiated
 
-**AI agent workflow for chat-initiated changes:**
-1. Receive instruction in chat
-2. **Create the task document first** (spec or task, as appropriate)
-3. Then implement the change
-4. Commit both the task doc and the code changes together
+**AI agent workflow:**
+1. **Create the task document first** (spec or task, as appropriate)
+2. **Commit the task document** — this creates a checkpoint to restart from if implementation fails
+3. Implement the change
+4. Test the implementation
+5. Commit the implementation
 
 ## Feature Development Process
 
