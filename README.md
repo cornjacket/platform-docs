@@ -77,15 +77,27 @@ This design is detailed in [ADR-0015](decisions/0015-time-handling-strategy.md) 
 To maintain security and separation of concerns, this project is split into multiple repositories. We use a **Wrapper Folder** concept to organize these repositories locally.
 
 ### Local Setup
-1. Create a parent directory: `mkdir cornjacket-platform && cd cornjacket-platform`
-2. Clone the core repositories into this folder:
-   - `git clone https://github.com/cornjacket/platform-docs.git`
-   - `git clone https://github.com/cornjacket/platform-infra.git`
-   - `git clone https://github.com/cornjacket/platform-services.git`
-3. Create the `CLAUDE.md` symlink in the wrapper directory so that Claude Code can pick up project instructions when working from the top-level folder:
-   ```bash
-   ln -s platform-docs/CLAUDE.md CLAUDE.md
-   ```
+
+The workspace uses bare repositories with git worktrees. A bootstrap script automates the full setup:
+
+```bash
+# 1. Temporary clone to get the bootstrap script
+git clone https://github.com/cornjacket/platform-docs.git
+
+# 2. Run bootstrap (creates the full workspace, then deletes the temp clone)
+platform-docs/tools/bootstrap.sh [workspace-name]
+# Default workspace-name: cornjacket-platform
+
+# 3. Enter the workspace
+cd cornjacket-platform   # or your chosen name
+```
+
+The bootstrap script:
+- Creates bare repos in `.repos/` with proper fetch refspecs and remote tracking
+- Sets up `main/` worktrees for platform-docs, platform-infra, and platform-services
+- Clones ai-builder-lessons (standard clone)
+- Symlinks CLAUDE.md, GEMINI.md, and workspace scripts from `platform-docs/main/tools/`
+- Deletes the temporary platform-docs clone (replaced by the worktree version)
 
 ### The Wrapper Concept
 The `cornjacket-platform/` directory is **not** a Git repository. It is a logical container that allows you to:
