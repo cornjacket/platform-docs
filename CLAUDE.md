@@ -112,7 +112,7 @@ Tags are created at **phase completion** and **releases** only (see ADR-0011). T
 | Phase | `phase-N-description` | `phase-1-local-skeleton` |
 | Release | `vX.Y.Z` | `v0.1.0` |
 
-Apply the same tag to all three repos. Intermediate progress is tracked via commits, not tags.
+Apply the same tag to all three repos and **push tags immediately** (`git push origin <tag>`). Tags must exist on the remote — local-only tags are lost on re-clone. Intermediate progress is tracked via commits, not tags.
 
 ## Conciseness Rule
 
